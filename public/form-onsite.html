@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background-color: #f9f9f9;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
       padding: 20px;
     }
     .container {
@@ -28,20 +28,20 @@
     h2 {
       text-align: center;
       color: #222;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
     label {
       font-weight: bold;
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
     small {
       font-style: italic;
       font-size: 11px;
       color: #666;
-      display: block;
       margin-top: -3px;
       margin-bottom: 8px;
+      display: block;
     }
     input, select, button {
       width: 100%;
@@ -54,9 +54,9 @@
     button {
       background-color: #007bff;
       color: white;
+      font-weight: bold;
       border: none;
       cursor: pointer;
-      font-weight: bold;
     }
     button:hover {
       background-color: #0056b3;
@@ -75,17 +75,16 @@
 <body>
   <div class="container">
     <div class="logo">
-      <img src="https://elanexpo.net/assets/logo-elanexpo.png" alt="Elan Expo" />
+      <img src="https://leena.app/assets/logo-elanexpo.png" alt="Elan Expo" />
     </div>
     <h2>Formulaire d'inscription</h2>
-
     <div id="success">✅ Enregistrement réussi / Registration successful</div>
 
     <form id="regForm">
-      <label>Salon</label>
-      <small>Which expo are you registering for?</small>
+      <label>Choisissez Votre Salon</label>
+      <small>Which exhibition are you registering for?</small>
       <select name="expoName" required>
-        <option value="">-- Veuillez choisir / Please select --</option>
+        <option value="">-- Veuillez choisir --</option>
         <option value="MadesignMorocco2025">Madesign Morocco 2025</option>
         <option value="MegaLightingMorocco2025">Mega Lighting Expo Morocco 2025</option>
         <option value="MegaCeramicaMorocco2025">Mega Ceramica Expo Morocco 2025</option>
@@ -110,19 +109,70 @@
       <label>Pays</label>
       <small>Country</small>
       <select name="country" required>
-        <option value="">-- Veuillez sélectionner un pays --</option>
         <option value="Maroc">Maroc</option>
+        <option value="Afghanistan">Afghanistan</option>
+        <option value="Afrique du Sud">Afrique du Sud</option>
+        <option value="Albanie">Albanie</option>
         <option value="Algérie">Algérie</option>
-        <option value="Tunisie">Tunisie</option>
-        <option value="France">France</option>
-        <option value="Turquie">Turquie</option>
-        <option value="Italie">Italie</option>
-        <option value="Espagne">Espagne</option>
-        <option value="Chine">Chine</option>
-        <option value="Inde">Inde</option>
         <option value="Allemagne">Allemagne</option>
+        <option value="Arabie saoudite">Arabie saoudite</option>
+        <option value="Argentine">Argentine</option>
+        <option value="Australie">Australie</option>
+        <option value="Autriche">Autriche</option>
+        <option value="Bangladesh">Bangladesh</option>
+        <option value="Belgique">Belgique</option>
+        <option value="Bénin">Bénin</option>
+        <option value="Brésil">Brésil</option>
+        <option value="Bulgarie">Bulgarie</option>
+        <option value="Cameroun">Cameroun</option>
+        <option value="Canada">Canada</option>
+        <option value="Chine">Chine</option>
+        <option value="Colombie">Colombie</option>
+        <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+        <option value="Danemark">Danemark</option>
+        <option value="Égypte">Égypte</option>
+        <option value="Émirats arabes unis">Émirats arabes unis</option>
+        <option value="Espagne">Espagne</option>
         <option value="États-Unis">États-Unis</option>
-        <!-- Listeyi istersen genişletiriz -->
+        <option value="Finlande">Finlande</option>
+        <option value="France">France</option>
+        <option value="Ghana">Ghana</option>
+        <option value="Grèce">Grèce</option>
+        <option value="Hongrie">Hongrie</option>
+        <option value="Inde">Inde</option>
+        <option value="Indonésie">Indonésie</option>
+        <option value="Irak">Irak</option>
+        <option value="Iran">Iran</option>
+        <option value="Irlande">Irlande</option>
+        <option value="Israël">Israël</option>
+        <option value="Italie">Italie</option>
+        <option value="Japon">Japon</option>
+        <option value="Kenya">Kenya</option>
+        <option value="Liban">Liban</option>
+        <option value="Malaisie">Malaisie</option>
+        <option value="Mexique">Mexique</option>
+        <option value="Nigéria">Nigéria</option>
+        <option value="Norvège">Norvège</option>
+        <option value="Pays-Bas">Pays-Bas</option>
+        <option value="Pologne">Pologne</option>
+        <option value="Portugal">Portugal</option>
+        <option value="Qatar">Qatar</option>
+        <option value="République tchèque">République tchèque</option>
+        <option value="Roumanie">Roumanie</option>
+        <option value="Russie">Russie</option>
+        <option value="Sénégal">Sénégal</option>
+        <option value="Serbie">Serbie</option>
+        <option value="Singapour">Singapour</option>
+        <option value="Slovaquie">Slovaquie</option>
+        <option value="Suède">Suède</option>
+        <option value="Suisse">Suisse</option>
+        <option value="Syrie">Syrie</option>
+        <option value="Thaïlande">Thaïlande</option>
+        <option value="Tunisie">Tunisie</option>
+        <option value="Turquie">Turquie</option>
+        <option value="Ukraine">Ukraine</option>
+        <option value="Vietnam">Vietnam</option>
+        <option value="Yémen">Yémen</option>
       </select>
 
       <label>Poste</label>
