@@ -1,150 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Visitor Log</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background-color: #1e1e2f; color: #fff; font-family: Arial, sans-serif; padding: 30px; }
-    h1 { text-align: center; }
-    input[type="text"] { padding: 10px; width: 300px; font-size: 16px; margin-bottom: 20px; }
-    label { margin-right: 10px; }
-    .filters { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 12px; border-bottom: 1px solid #444; text-align: left; }
-    th { background-color: #333; }
-    button { padding: 10px 20px; font-size: 14px; margin: 10px 0; cursor: pointer; }
-    .pagination { margin-top: 20px; text-align: center; }
-    .pagination button { margin: 0 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 60px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    input {
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .count {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>Visitor Log</h1>
-  <div class="filters">
-    <input type="text" id="searchInput" placeholder="Search..." />
-    <label><input type="checkbox" class="originFilter" value="onsite" checked /> Onsite</label>
-    <label><input type="checkbox" class="originFilter" value="zohoform" checked /> Zohoform</label>
-    <label><input type="checkbox" class="originFilter" value="massimport" checked /> Massimport</label>
-    <label><input type="checkbox" id="checkedOnly" /> Only Checked-in</label>
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo" />
   </div>
-  <div><strong>Top Sources:</strong> <span id="sourceStats"></span></div>
-  <button onclick="exportCSV()">Download CSV</button>
+
+  <h2>Liste des visiteurs</h2>
+  <div class="count" id="visitorCount">Total visiteurs: 0</div>
+  <input type="text" id="search" placeholder="Rechercher un visiteur...">
+
   <table>
     <thead>
       <tr>
-        <th>Full Name</th>
-        <th>Company</th>
-        <th>Email</th>
         <th>Badge ID</th>
-        <th>Check-in</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Société</th>
+        <th>Pays</th>
+        <th>Poste</th>
+        <th>Salon</th>
+        <th>Origine</th>
         <th>Source</th>
-        <th>Origin</th>
+        <th>Créé</th>
+        <th>Check-In</th>
       </tr>
     </thead>
     <tbody id="visitorTable"></tbody>
   </table>
-  <div class="pagination" id="pagination"></div>
+
   <script>
-    let allVisitors = [];
-    let checkins = [];
-    let filteredVisitors = [];
-    let currentPage = 1;
-    const pageSize = 100;
+    const table = document.getElementById("visitorTable");
+    const countBox = document.getElementById("visitorCount");
+    const searchInput = document.getElementById("search");
 
-    async function loadData() {
-      const [visRes, chkRes] = await Promise.all([
-        fetch('/api/visitors'),
-        fetch('/api/checkins')
-      ]);
-      allVisitors = await visRes.json();
-      checkins = await chkRes.json();
-      updateSourceStats();
-      applyFilters();
-    }
+    async function loadVisitors() {
+      const res = await fetch("/api/visitors");
+      const data = await res.json();
+      const visitors = data.reverse(); // en son gelen en başta
 
-    function updateSourceStats() {
-      const counts = {};
-      allVisitors.forEach(v => {
-        const src = (v.source || 'Unknown').trim();
-        counts[src] = (counts[src] || 0) + 1;
-      });
-      const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,5);
-      document.getElementById("sourceStats").textContent = sorted.map(s => s[0] + " (" + s[1] + ")").join(", ");
-    }
+      countBox.textContent = `Total visiteurs: ${visitors.length}`;
 
-    function applyFilters() {
-      const keyword = document.getElementById("searchInput").value.toLowerCase();
-      const origins = Array.from(document.querySelectorAll(".originFilter:checked")).map(cb => cb.value);
-      const onlyChecked = document.getElementById("checkedOnly").checked;
-
-      filteredVisitors = allVisitors.filter(v => {
-        const matchSearch = (
-          v.fullName.toLowerCase().includes(keyword) ||
-          v.company.toLowerCase().includes(keyword) ||
-          v.email.toLowerCase().includes(keyword)
-        );
-        const matchOrigin = origins.includes((v.origin || '').toLowerCase());
-        const matchCheckin = !onlyChecked || checkins.some(c => c.badgeId === v.id);
-        return matchSearch && matchOrigin && matchCheckin;
-      });
-      renderTable();
-      renderPagination();
-    }
-
-    function renderTable() {
-      const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
-      const slice = filteredVisitors.slice(start, end);
-      const table = document.getElementById("visitorTable");
-      table.innerHTML = "";
-      slice.forEach(v => {
-        const status = checkins.some(c => c.badgeId === v.id) ? "✔️" : "❌";
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${v.fullName}</td>
-          <td>${v.company}</td>
-          <td>${v.email}</td>
-          <td>${v.id}</td>
-          <td>${status}</td>
-          <td>${v.source || ''}</td>
-          <td>${v.origin || ''}</td>
+      visitors.forEach(v => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${v.badgeID || ""}</td>
+          <td>${v.name || ""} ${v.lastName || ""}</td>
+          <td>${v.email || ""}</td>
+          <td>${v.company || ""}</td>
+          <td>${v.country || ""}</td>
+          <td>${v.jobTitle || ""}</td>
+          <td>${v.expoName || ""}</td>
+          <td>${v.origin || ""}</td>
+          <td>${v.source || ""}</td>
+          <td>${v.timeStamp || ""}</td>
+          <td>${v.checkInTime || "—"}</td>
         `;
-        table.appendChild(row);
+        table.appendChild(tr);
       });
     }
 
-    function renderPagination() {
-      const totalPages = Math.ceil(filteredVisitors.length / pageSize);
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        if (i === currentPage) btn.disabled = true;
-        btn.onclick = () => { currentPage = i; renderTable(); };
-        pagination.appendChild(btn);
+    function filterTable() {
+      const filter = searchInput.value.toLowerCase();
+      const rows = table.getElementsByTagName("tr");
+      for (let row of rows) {
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
       }
     }
 
-    function exportCSV() {
-      const rows = [["Full Name", "Company", "Email", "Badge ID", "Check-in", "Source", "Origin"]];
-      filteredVisitors.forEach(v => {
-        const status = checkins.some(c => c.badgeId === v.id) ? "✔️" : "❌";
-        rows.push([v.fullName, v.company, v.email, v.id, status, v.source || '', v.origin || '']);
-      });
-      const csv = rows.map(r => r.join(",")).join("\n");
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "visitors.csv";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    document.getElementById("searchInput").addEventListener("input", applyFilters);
-    document.querySelectorAll(".originFilter").forEach(cb => cb.addEventListener("change", applyFilters));
-    document.getElementById("checkedOnly").addEventListener("change", applyFilters);
-    loadData();
+    searchInput.addEventListener("input", filterTable);
+    loadVisitors();
   </script>
 </body>
 </html>
