@@ -1,24 +1,32 @@
-
 const fs = require('fs');
 const path = require('path');
 
-const VISITOR_FILE = path.join(__dirname, '../data/visitors.json');
+const visitorsFile = '/data/visitors.json';
 
-function safeWriteVisitors(newVisitors) {
+function safeWriteVisitors(newData) {
+  let visitors = [];
+
   try {
-    let existing = [];
-    if (fs.existsSync(VISITOR_FILE)) {
-      const raw = fs.readFileSync(VISITOR_FILE, 'utf8');
-      existing = JSON.parse(raw);
+    if (fs.existsSync(visitorsFile)) {
+      const fileData = fs.readFileSync(visitorsFile, 'utf8');
+      visitors = JSON.parse(fileData);
     }
-
-    // Mevcutlara yenileri ekle
-    const merged = [...existing, ...newVisitors];
-
-    fs.writeFileSync(VISITOR_FILE, JSON.stringify(merged, null, 2), 'utf8');
-    console.log(`✅ Added ${newVisitors.length} new visitors (total: ${merged.length})`);
   } catch (err) {
-    console.error('❌ Error writing visitors.json:', err);
+    console.error("❌ Error reading visitors file:", err);
+  }
+
+  // Gelen data dizi ise birleştir, değilse ekle
+  if (Array.isArray(newData)) {
+    visitors.push(...newData);
+  } else {
+    visitors.push(newData);
+  }
+
+  try {
+    fs.writeFileSync(visitorsFile, JSON.stringify(visitors, null, 2));
+    console.log(`✅ Visitors saved: ${Array.isArray(newData) ? newData.length : 1}`);
+  } catch (err) {
+    console.error("❌ Error writing visitors file:", err);
   }
 }
 
