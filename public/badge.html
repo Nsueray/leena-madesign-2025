@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Print Badge</title>
+  <style>
+    @media print {
+      body { margin: 0; padding: 0; }
+      .badge { page-break-after: always; }
+    }
+    body { background: white; font-family: Arial, sans-serif; text-align: center; padding: 30px; }
+    .badge { width: 100mm; height: 50mm; border: 1px solid #000; margin: 0 auto 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .fullname { font-size: 22pt; font-weight: bold; }
+    .company { font-size: 18pt; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="badge" id="badge">
+    <div class="fullname" id="fullName">Loading...</div>
+    <div class="company" id="company">Loading...</div>
+  </div>
+  <script>
+    async function loadBadge() {
+      const params = new URLSearchParams(window.location.search);
+      const badgeId = params.get('badge_id');
+      if (!badgeId) return;
+      try {
+        const res = await fetch('/api/visitors');
+        const data = await res.json();
+        const visitor = data.find(v => v.id === badgeId);
+        if (!visitor) return;
+        document.getElementById('fullName').textContent = visitor.fullName;
+        document.getElementById('company').textContent = visitor.company;
+        setTimeout(() => window.print(), 300);
+        window.onafterprint = () => window.location.href = '/qrscanner.html';
+      } catch (err) {
+        document.getElementById('fullName').textContent = 'Error';
+      }
+    }
+    loadBadge();
+  </script>
+</body>
+</html>

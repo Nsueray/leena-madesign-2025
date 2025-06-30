@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mass Import Visitors</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #1e1e2f; color: #fff; padding: 40px; }
+    h1 { text-align: center; margin-bottom: 30px; }
+    .container { max-width: 700px; margin: auto; background: #2f3545; padding: 30px; border-radius: 10px; }
+    label { display: block; margin: 15px 0 5px; }
+    input[type="file"], textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; }
+    button { padding: 12px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; }
+    button:hover { background-color: #45a049; }
+  </style>
+</head>
+<body>
+  <h1>Mass Import Visitors</h1>
+  <div class="container">
+    <form id="importForm">
+      <label>Select Excel (.xlsx or .csv) file</label>
+      <input type="file" id="fileInput" accept=".csv,.xlsx" required />
+
+      <label>
+        <input type="checkbox" id="sendEmails" />
+        Send confirmation email to each visitor
+      </label>
+
+      <label>Email Template (HTML)</label>
+      <textarea id="emailTemplate" rows="10">
+Dear [NAME],<br><br>
+Thank you for registering for Mega Clima Kenya 2025.<br>
+Please find your personal QR code below.<br><br>
+Best regards,<br>
+Elan Expo
+      </textarea>
+
+      <button type="submit">Upload and Import</button>
+    </form>
+    <div id="status" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('importForm');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert("Please select a file.");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("sendEmails", document.getElementById('sendEmails').checked);
+      formData.append("emailTemplate", document.getElementById('emailTemplate').value);
+
+      const res = await fetch("/massimport", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await res.text();
+      document.getElementById("status").innerHTML = result;
+    });
+  </script>
+</body>
+</html>

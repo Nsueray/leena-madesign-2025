@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Elan Expo Login</title>
+  <style>
+    body { background-color: #1e1e2f; color: #fff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    input, button { padding: 12px; font-size: 16px; margin: 8px; width: 280px; border-radius: 5px; border: none; }
+    button { background-color: #4CAF50; color: white; cursor: pointer; }
+    .box { background: #333; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px #000; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Elan Expo Login</h2>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p id="error" style="color: red;"></p>
+  </div>
+  <script>
+    function login() {
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value.trim();
+      if (u === "elanexpo" && p === "Eliz2025") {
+        localStorage.setItem("loggedIn", "true");
+        window.location.href = "/admin.html";
+      } else {
+        document.getElementById("error").textContent = "Invalid credentials.";
+      }
+    }
+  </script>
+</body>
+</html>

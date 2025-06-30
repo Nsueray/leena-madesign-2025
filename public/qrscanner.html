@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QR Scanner with Manual Entry</title>
+  <style>
+    body {
+      background-color: #2b2f3a;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 50px;
+    }
+    input, button {
+      padding: 14px;
+      font-size: 16px;
+      width: 320px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    label {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Scan QR or Enter Badge ID</h2>
+  <input id="scannerInput" placeholder="Badge ID or QR" autofocus />
+
+  <label>
+    <input type="checkbox" id="manualToggle" />
+    Manual Registration
+  </label>
+
+  <div id="manualForm" class="hidden">
+    <input type="text" id="inputName" placeholder="First Name" required />
+    <input type="text" id="inputLastName" placeholder="Last Name" required />
+    <input type="email" id="inputEmail" placeholder="Email" required />
+    <input type="text" id="inputCompany" placeholder="Company" required />
+    <button onclick="submitManual()">Register & Print</button>
+  </div>
+
+  <script>
+    const input = document.getElementById("scannerInput");
+    const manualToggle = document.getElementById("manualToggle");
+    const manualForm = document.getElementById("manualForm");
+
+    manualToggle.addEventListener("change", () => {
+      manualForm.classList.toggle("hidden", !manualToggle.checked);
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const badgeId = input.value.trim();
+        if (badgeId) {
+          window.location.href = `/badge.html?badge_id=${badgeId}`;
+        }
+      }
+    });
+
+    async function submitManual() {
+      const name = document.getElementById("inputName").value.trim();
+      const lastName = document.getElementById("inputLastName").value.trim();
+      const email = document.getElementById("inputEmail").value.trim();
+      const company = document.getElementById("inputCompany").value.trim();
+
+      if (!name || !lastName || !email || !company) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const res = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          lastName,
+          email,
+          company,
+          origin: "onsite",
+          source: "Manual - qrscanner"
+        })
+      });
+
+      const result = await res.json();
+      if (result.badgeId) {
+        window.location.href = `/badge.html?badge_id=${result.badgeId}`;
+      } else {
+        alert("Registration failed.");
+      }
+    }
+  </script>
+</body>
+</html>
