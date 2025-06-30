@@ -15,18 +15,34 @@
       margin-bottom: 20px;
     }
     .logo img {
-      height: 60px;
+      height: 150px;
     }
     h2 {
       text-align: center;
       margin-bottom: 10px;
     }
-    input {
+    .filters {
+      margin-bottom: 15px;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters div {
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
       padding: 8px;
       width: 100%;
       max-width: 400px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       font-size: 14px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      margin-bottom: 15px;
+      cursor: pointer;
     }
     table {
       width: 100%;
@@ -46,9 +62,13 @@
     tr:nth-child(even) {
       background-color: #f2f2f2;
     }
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
     .count {
-      margin-bottom: 10px;
       font-weight: bold;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -59,7 +79,30 @@
 
   <h2>Liste des visiteurs</h2>
   <div class="count" id="visitorCount">Total visiteurs: 0</div>
+
   <input type="text" id="search" placeholder="Rechercher un visiteur...">
+
+  <div class="filters">
+    <div>
+      <label>Salon:</label>
+      <input type="checkbox" class="expoFilter" value="MadesignMorocco2025"> Madesign
+      <input type="checkbox" class="expoFilter" value="MegaLightingMorocco2025"> Lighting
+      <input type="checkbox" class="expoFilter" value="MegaCeramicaMorocco2025"> Ceramica
+    </div>
+    <div>
+      <label>Source:</label>
+      <input type="checkbox" class="sourceFilter" value="Online"> Online
+      <input type="checkbox" class="sourceFilter" value="Onsite"> Onsite
+      <input type="checkbox" class="sourceFilter" value="Meta Ads"> Meta Ads
+    </div>
+    <div>
+      <label>Origine:</label>
+      <input type="checkbox" class="originFilter" value="form"> form
+      <input type="checkbox" class="originFilter" value="massimport"> massimport
+      <input type="checkbox" class="originFilter" value="crm"> crm
+    </div>
+    <button onclick="exportCSV()">Exporter en Excel</button>
+  </div>
 
   <table>
     <thead>
@@ -80,19 +123,58 @@
     <tbody id="visitorTable"></tbody>
   </table>
 
+  <div class="pagination" id="pagination"></div>
+
   <script>
     const table = document.getElementById("visitorTable");
     const countBox = document.getElementById("visitorCount");
     const searchInput = document.getElementById("search");
+    const expoCheckboxes = document.querySelectorAll(".expoFilter");
+    const sourceCheckboxes = document.querySelectorAll(".sourceFilter");
+    const originCheckboxes = document.querySelectorAll(".originFilter");
+    const paginationBox = document.getElementById("pagination");
+
+    let allVisitors = [];
+    let filteredVisitors = [];
+    const pageSize = 100;
+    let currentPage = 1;
 
     async function loadVisitors() {
       const res = await fetch("/api/visitors");
       const data = await res.json();
-      const visitors = data.reverse(); // en son gelen en başta
+      allVisitors = data.reverse(); // en son gelen en başta
+      applyFilters();
+    }
 
-      countBox.textContent = `Total visiteurs: ${visitors.length}`;
+    function applyFilters() {
+      const expoSelected = getCheckedValues(expoCheckboxes);
+      const sourceSelected = getCheckedValues(sourceCheckboxes);
+      const originSelected = getCheckedValues(originCheckboxes);
+      const searchText = searchInput.value.toLowerCase();
 
-      visitors.forEach(v => {
+      filteredVisitors = allVisitors.filter(v => {
+        const matchExpo = expoSelected.length === 0 || expoSelected.includes(v.expoName);
+        const matchSource = sourceSelected.length === 0 || sourceSelected.includes(v.source);
+        const matchOrigin = originSelected.length === 0 || originSelected.includes(v.origin);
+        const matchText = Object.values(v).join(" ").toLowerCase().includes(searchText);
+        return matchExpo && matchSource && matchOrigin && matchText;
+      });
+
+      currentPage = 1;
+      updateTable();
+    }
+
+    function getCheckedValues(checkboxes) {
+      return Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    }
+
+    function updateTable() {
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageVisitors = filteredVisitors.slice(start, end);
+
+      table.innerHTML = "";
+      pageVisitors.forEach(v => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${v.badgeID || ""}</td>
@@ -109,17 +191,46 @@
         `;
         table.appendChild(tr);
       });
+
+      countBox.textContent = `Total visiteurs: ${filteredVisitors.length}`;
+      renderPagination();
     }
 
-    function filterTable() {
-      const filter = searchInput.value.toLowerCase();
-      const rows = table.getElementsByTagName("tr");
-      for (let row of rows) {
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredVisitors.length / pageSize);
+      paginationBox.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        if (i === currentPage) btn.style.fontWeight = "bold";
+        btn.onclick = () => {
+          currentPage = i;
+          updateTable();
+        };
+        paginationBox.appendChild(btn);
       }
     }
 
-    searchInput.addEventListener("input", filterTable);
+    function exportCSV() {
+      let csv = "BadgeID,Name,Email,Company,Country,JobTitle,ExpoName,Origin,Source,Created,CheckIn\n";
+      filteredVisitors.forEach(v => {
+        csv += `"${v.badgeID}","${v.name} ${v.lastName}","${v.email}","${v.company}","${v.country}","${v.jobTitle}","${v.expoName}","${v.origin}","${v.source}","${v.timeStamp}","${v.checkInTime || ""}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "visiteurs_export.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    expoCheckboxes.forEach(cb => cb.addEventListener("change", applyFilters));
+    sourceCheckboxes.forEach(cb => cb.addEventListener("change", applyFilters));
+    originCheckboxes.forEach(cb => cb.addEventListener("change", applyFilters));
     loadVisitors();
   </script>
 </body>
