@@ -2,40 +2,21 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Inscription Visiteur – Madesign</title>
+  <title>Formulaire d'inscription</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      padding: 40px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
     }
-    form {
-      background: white;
-      padding: 30px;
-      max-width: 600px;
+    .container {
+      background: #fff;
+      padding: 25px;
+      max-width: 420px;
       margin: auto;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      display: block;
-      width: 100%;
-      margin-bottom: 20px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    #success {
-      background: #d4edda;
-      color: #155724;
-      padding: 12px;
-      margin-bottom: 20px;
-      border-radius: 5px;
-      text-align: center;
-      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .logo {
       text-align: center;
@@ -44,66 +25,116 @@
     .logo img {
       height: 50px;
     }
+    h2 {
+      text-align: center;
+      color: #222;
+      margin-bottom: 30px;
+    }
     label {
-      margin-top: 10px;
       font-weight: bold;
+      display: block;
+      margin-bottom: 4px;
     }
     small {
-      display: block;
-      font-size: 12px;
       font-style: italic;
-      color: #555;
-      margin-top: -10px;
-      margin-bottom: 10px;
+      font-size: 11px;
+      color: #666;
+      display: block;
+      margin-top: -3px;
+      margin-bottom: 8px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #success {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      margin-bottom: 20px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <form id="regForm">
+  <div class="container">
     <div class="logo">
-      <img src="https://elanexpo.net/assets/logo-elanexpo.png" alt="Elan Expo">
+      <img src="https://elanexpo.net/assets/logo-elanexpo.png" alt="Elan Expo" />
     </div>
-    <h2>Formulaire d'inscription – Madesign Morocco 2025</h2>
-    <div id="success">✅ Enregistré avec succès / Successfully registered</div>
+    <h2>Formulaire d'inscription</h2>
 
-    <label>Prénom</label>
-    <small>First Name</small>
-    <input type="text" name="name" required />
+    <div id="success">✅ Enregistrement réussi / Registration successful</div>
 
-    <label>Nom de famille</label>
-    <small>Last Name</small>
-    <input type="text" name="lastName" required />
+    <form id="regForm">
+      <label>Salon</label>
+      <small>Which expo are you registering for?</small>
+      <select name="expoName" required>
+        <option value="">-- Veuillez choisir / Please select --</option>
+        <option value="MadesignMorocco2025">Madesign Morocco 2025</option>
+        <option value="MegaLightingMorocco2025">Mega Lighting Expo Morocco 2025</option>
+        <option value="MegaCeramicaMorocco2025">Mega Ceramica Expo Morocco 2025</option>
+      </select>
 
-    <label>Adresse e-mail</label>
-    <small>Email Address</small>
-    <input type="email" name="email" required />
+      <label>Prénom</label>
+      <small>First Name</small>
+      <input type="text" name="name" required />
 
-    <label>Société</label>
-    <small>Company</small>
-    <input type="text" name="company" required />
+      <label>Nom de famille</label>
+      <small>Last Name</small>
+      <input type="text" name="lastName" required />
 
-    <label>Pays</label>
-    <small>Country</small>
-    <input type="text" name="country" required />
+      <label>Adresse e-mail</label>
+      <small>Email Address</small>
+      <input type="email" name="email" required />
 
-    <label>Poste</label>
-    <small>Job Title</small>
-    <input type="text" name="jobTitle" required />
+      <label>Société</label>
+      <small>Company</small>
+      <input type="text" name="company" required />
 
-    <label>Salon</label>
-    <small>Which expo are you registering for?</small>
-    <select name="expoName" required>
-      <option value="">-- Veuillez choisir / Please select --</option>
-      <option value="MadesignMorocco2025">Madesign Morocco 2025</option>
-      <option value="MegaLightingMorocco2025">Mega Lighting Expo Morocco 2025</option>
-      <option value="MegaCeramicaMorocco2025">Mega Ceramica Expo Morocco 2025</option>
-    </select>
+      <label>Pays</label>
+      <small>Country</small>
+      <select name="country" required>
+        <option value="">-- Veuillez sélectionner un pays --</option>
+        <option value="Maroc">Maroc</option>
+        <option value="Algérie">Algérie</option>
+        <option value="Tunisie">Tunisie</option>
+        <option value="France">France</option>
+        <option value="Turquie">Turquie</option>
+        <option value="Italie">Italie</option>
+        <option value="Espagne">Espagne</option>
+        <option value="Chine">Chine</option>
+        <option value="Inde">Inde</option>
+        <option value="Allemagne">Allemagne</option>
+        <option value="États-Unis">États-Unis</option>
+        <!-- Listeyi istersen genişletiriz -->
+      </select>
 
-    <input type="hidden" name="origin" value="form" />
-    <input type="hidden" name="source" value="Onsite" />
+      <label>Poste</label>
+      <small>Job Title</small>
+      <input type="text" name="jobTitle" required />
 
-    <button type="submit">S'inscrire / Register</button>
-  </form>
+      <input type="hidden" name="origin" value="form" />
+      <input type="hidden" name="source" value="Onsite" />
+
+      <button type="submit">Valider</button>
+    </form>
+  </div>
 
   <script>
     const form = document.getElementById("regForm");
@@ -125,7 +156,7 @@
         form.reset();
         setTimeout(() => { successBox.style.display = "none"; }, 4000);
       } else {
-        alert("Erreur: " + (result.message || "L'inscription a échoué."));
+        alert("Erreur: " + (result.message || "Échec de l'enregistrement."));
       }
     });
   </script>
