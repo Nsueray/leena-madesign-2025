@@ -142,7 +142,7 @@
     async function loadVisitors() {
       const res = await fetch("/api/visitors");
       const data = await res.json();
-      allVisitors = data.reverse(); // en son gelen en başta
+      allVisitors = Array.isArray(data) ? data.reverse() : [];
       applyFilters();
     }
 
@@ -214,7 +214,7 @@
     function exportCSV() {
       let csv = "BadgeID,Name,Email,Company,Country,JobTitle,ExpoName,Origin,Source,Created,CheckIn\n";
       filteredVisitors.forEach(v => {
-        csv += `"${v.badgeID}","${v.name} ${v.lastName}","${v.email}","${v.company}","${v.country}","${v.jobTitle}","${v.expoName}","${v.origin}","${v.source}","${v.timeStamp}","${v.checkInTime || ""}"\n`;
+        csv += `"${v.badgeID}","${v.name || ""} ${v.lastName || ""}","${v.email}","${v.company}","${v.country}","${v.jobTitle}","${v.expoName}","${v.origin}","${v.source}","${v.timeStamp}","${v.checkInTime || ""}"\n`;
       });
 
       const blob = new Blob([csv], { type: "text/csv" });
