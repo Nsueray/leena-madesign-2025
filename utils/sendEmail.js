@@ -1,50 +1,37 @@
-const sgMail = require('@sendgrid/mail');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
-
+const sgMail = require('@sendgrid/mail');
+const config = require('../config');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-async function sendEmail({ to, fullName, expoName, attachments = [] }) {
-  const templatePath = path.join(__dirname, '../email_templates/qr-default.html');
-  let htmlContent = fs.readFileSync(templatePath, 'utf8');
-
-  const qrAttachment = attachments.find(att => att.filename === 'qrcode.png');
-  const qrBase64 = fs.readFileSync(qrAttachment.path).toString('base64');
-
-  htmlContent = htmlContent
-    .replace(/\[FULLNAME\]/g, fullName)
-    .replace(/\[EXPO\]/g, expoName)
-    .replace(/\[QR_IMAGE\]/g, `cid:qrcode@inline`);
+function sendEmail({ to, subject, attachments, fullName, expoName, qrPath }) {
+  const htmlTemplatePath = path.join(__dirname, '../email_templates/qr-default.html');
+  const htmlContent = fs.readFileSync(htmlTemplatePath, 'utf8')
+    .replace(/\[FULL_NAME\]/g, fullName)
+    .replace(/\[EXPO_NAME\]/g, expoName)
+    .replace(/\[QR_IMAGE\]/g, `cid:qrcode`);
 
   const msg = {
     to,
-    from: process.env.SENDGRID_FROM,
-    subject: `Votre badge pour l'événement`,
+    from: 'noreply@leena.app',
+    subject: subject || `Votre code QR – ${expoName}`,
     html: htmlContent,
     attachments: [
       {
-        content: qrBase64,
-        filename: 'qrcode.png',
-        type: 'image/png',
-        disposition: 'inline',
-        content_id: 'qrcode@inline'
-      },
-      {
-        content: qrBase64,
-        filename: 'qrcode.png',
-        type: 'image/png',
-        disposition: 'attachment'
+        content: fs.readFileSync(qrPath).toString("base64"),
+        filename: "qrcode.png",
+        type: "image/png",
+        disposition: "inline",
+        content_id: "qrcode"
       }
     ]
   };
 
-  try {
-    await sgMail.send(msg);
-    console.log(`✅ Email sent to ${to}`);
-  } catch (err) {
-    console.error('❌ Email error:', err.response?.body || err.message);
-  }
+  return sgMail.send(msg).then(() => {
+    console.log("✅ Email sent to", to);
+  }).catch(err => {
+    console.error("❌ Error sending email:", err);
+  });
 }
 
 module.exports = sendEmail;
