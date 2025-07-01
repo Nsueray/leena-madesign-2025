@@ -10,28 +10,13 @@
       padding: 20px;
       background-color: #f5f5f5;
     }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo img {
-      height: 150px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .filters {
-      margin-bottom: 15px;
-    }
-    .filters label {
-      margin-right: 10px;
-      font-weight: bold;
-    }
-    .filters div {
-      margin-bottom: 10px;
-    }
-    input[type="text"] {
+    .logo { text-align: center; margin-bottom: 20px; }
+    .logo img { height: 150px; }
+    h2 { text-align: center; margin-bottom: 10px; }
+    .filters { margin-bottom: 15px; }
+    .filters label { margin-right: 10px; font-weight: bold; }
+    .filters div { margin-bottom: 10px; }
+    input[type="text"], input[type="date"] {
       padding: 8px;
       width: 100%;
       max-width: 400px;
@@ -59,22 +44,9 @@
       background-color: #007bff;
       color: white;
     }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    .pagination {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .count {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .dashboard {
-      margin-bottom: 20px;
-      font-weight: bold;
-      font-size: 14px;
-    }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .pagination { text-align: center; margin-top: 20px; }
+    .count, .dashboard { font-weight: bold; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -90,6 +62,7 @@
   </div>
 
   <input type="text" id="search" placeholder="Rechercher un visiteur...">
+  <input type="date" id="dateFilter">
 
   <div class="filters">
     <div>
@@ -137,7 +110,10 @@
   <script>
     const table = document.getElementById("visitorTable");
     const countBox = document.getElementById("visitorCount");
+    const checkinBox = document.getElementById("checkinCount");
+    const expoBreakdown = document.getElementById("expoBreakdown");
     const searchInput = document.getElementById("search");
+    const dateFilter = document.getElementById("dateFilter");
     const expoCheckboxes = document.querySelectorAll(".expoFilter");
     const sourceCheckboxes = document.querySelectorAll(".sourceFilter");
     const originCheckboxes = document.querySelectorAll(".originFilter");
@@ -160,13 +136,15 @@
       const sourceSelected = getCheckedValues(sourceCheckboxes);
       const originSelected = getCheckedValues(originCheckboxes);
       const searchText = searchInput.value.toLowerCase();
+      const selectedDate = dateFilter.value;
 
       filteredVisitors = allVisitors.filter(v => {
         const matchExpo = expoSelected.length === 0 || expoSelected.includes(v.expoName);
         const matchSource = sourceSelected.length === 0 || sourceSelected.includes(v.source);
         const matchOrigin = originSelected.length === 0 || originSelected.includes(v.origin);
         const matchText = Object.values(v).join(" ").toLowerCase().includes(searchText);
-        return matchExpo && matchSource && matchOrigin && matchText;
+        const matchDate = !selectedDate || (v.timeStamp && v.timeStamp.startsWith(selectedDate));
+        return matchExpo && matchSource && matchOrigin && matchText && matchDate;
       });
 
       currentPage = 1;
@@ -202,19 +180,15 @@
       });
 
       countBox.textContent = `Total visiteurs: ${filteredVisitors.length}`;
-
-      // Dashboard kısmı
       const totalCheckIns = filteredVisitors.filter(v => v.checkInTime).length;
-      document.getElementById("checkinCount").textContent = `Check-ins: ${totalCheckIns}`;
+      checkinBox.textContent = `Check-ins: ${totalCheckIns}`;
 
-      const breakdown = {};
+      const expoStats = {};
       filteredVisitors.forEach(v => {
-        if (!breakdown[v.expoName]) breakdown[v.expoName] = 0;
-        breakdown[v.expoName]++;
+        expoStats[v.expoName] = (expoStats[v.expoName] || 0) + 1;
       });
 
-      const expoDiv = document.getElementById("expoBreakdown");
-      expoDiv.innerHTML = Object.entries(breakdown)
+      expoBreakdown.innerHTML = Object.entries(expoStats)
         .map(([expo, count]) => `<div>${expo}: ${count}</div>`)
         .join('');
 
@@ -253,9 +227,11 @@
     }
 
     searchInput.addEventListener("input", applyFilters);
+    dateFilter.addEventListener("change", applyFilters);
     expoCheckboxes.forEach(cb => cb.addEventListener("change", applyFilters));
     sourceCheckboxes.forEach(cb => cb.addEventListener("change", applyFilters));
     originCheckboxes.forEach(cb => cb.addEventListener("change", applyFilters));
+
     loadVisitors();
   </script>
 </body>
