@@ -1,33 +1,30 @@
 const fs = require('fs');
 const path = require('path');
 
-const visitorsFile = '/data/visitors.json';
+// Persistent disk mount
+const visitorsFile = path.join('/data', 'visitors.json');
 
-function safeWriteVisitors(newData) {
-  let visitors = [];
-
+function readVisitorsFile() {
+  if (!fs.existsSync(visitorsFile)) return [];
   try {
-    if (fs.existsSync(visitorsFile)) {
-      const fileData = fs.readFileSync(visitorsFile, 'utf8');
-      visitors = JSON.parse(fileData);
-    }
+    return JSON.parse(fs.readFileSync(visitorsFile, 'utf8'));
   } catch (err) {
-    console.error("❌ Error reading visitors file:", err);
-  }
-
-  // Gelen data dizi ise birleştir, değilse ekle
-  if (Array.isArray(newData)) {
-    visitors.push(...newData);
-  } else {
-    visitors.push(newData);
-  }
-
-  try {
-    fs.writeFileSync(visitorsFile, JSON.stringify(visitors, null, 2));
-    console.log(`✅ Visitors saved: ${Array.isArray(newData) ? newData.length : 1}`);
-  } catch (err) {
-    console.error("❌ Error writing visitors file:", err);
+    console.error('❌ Error parsing visitors.json:', err);
+    return [];
   }
 }
 
-module.exports = { safeWriteVisitors };
+function safeWriteVisitors(newEntries) {
+  const visitors = Array.isArray(newEntries)
+    ? newEntries
+    : [...readVisitorsFile(), newEntries];
+
+  try {
+    fs.writeFileSync(visitorsFile, JSON.stringify(visitors, null, 2), 'utf8');
+    console.log(`✅ Visitors written to disk (${visitorsFile})`);
+  } catch (err) {
+    console.error('❌ Error writing visitors file:', err);
+  }
+}
+
+module.exports = { readVisitorsFile, safeWriteVisitors };

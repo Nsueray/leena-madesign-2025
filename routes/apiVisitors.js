@@ -3,12 +3,17 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
-const visitorsFile = path.join(__dirname, '../data/visitors.json');
+const visitorsFile = path.join('/data', 'visitors.json');
 
 router.get('/', (req, res) => {
   if (!fs.existsSync(visitorsFile)) return res.json([]);
-  const data = fs.readFileSync(visitorsFile);
-  res.json(JSON.parse(data));
+  try {
+    const data = JSON.parse(fs.readFileSync(visitorsFile, 'utf8'));
+    res.json(data);
+  } catch (err) {
+    console.error('❌ Error reading visitors:', err);
+    res.status(500).json({ error: 'Could not load visitors' });
+  }
 });
 
 module.exports = router;
