@@ -180,12 +180,13 @@
       });
 
       countBox.textContent = `Total visiteurs: ${filteredVisitors.length}`;
-      const totalCheckIns = filteredVisitors.filter(v => v.checkInTime).length;
-      checkinBox.textContent = `Check-ins: ${totalCheckIns}`;
+      checkinBox.textContent = `Check-ins: ${filteredVisitors.filter(v => v.checkInTime).length}`;
 
       const expoStats = {};
       filteredVisitors.forEach(v => {
-        expoStats[v.expoName] = (expoStats[v.expoName] || 0) + 1;
+        if (v.expoName) {
+          expoStats[v.expoName] = (expoStats[v.expoName] || 0) + 1;
+        }
       });
 
       expoBreakdown.innerHTML = Object.entries(expoStats)
