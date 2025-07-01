@@ -1,34 +1,34 @@
 const sgMail = require('@sendgrid/mail');
 const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-async function sendEmail({ to, fullName, attachments }) {
-  const qrAttachment = attachments[0]; // varsayılan olarak bir tane var
+async function sendEmail({ to, fullName, expoName, attachments = [] }) {
+  const templatePath = path.join(__dirname, '../email_templates/qr-default.html');
+  let htmlContent = fs.readFileSync(templatePath, 'utf8');
+
+  const qrAttachment = attachments.find(att => att.filename === 'qrcode.png');
   const qrBase64 = fs.readFileSync(qrAttachment.path).toString('base64');
+
+  htmlContent = htmlContent
+    .replace(/\[FULLNAME\]/g, fullName)
+    .replace(/\[EXPO\]/g, expoName)
+    .replace(/\[QR_IMAGE\]/g, `cid:qrcode@inline`);
 
   const msg = {
     to,
     from: process.env.SENDGRID_FROM,
-    subject: `Votre badge pour ${process.env.EVENT_NAME || "l'événement"}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; font-size: 16px;">
-        <p>Bonjour <strong>${fullName}</strong>,</p>
-        <p>Merci pour votre inscription à ${process.env.EVENT_NAME || "l'événement"}.</p>
-        <p>Veuillez trouver ci-dessous votre code QR personnel :</p>
-        <img src="cid:qrcode" alt="QR Code" style="margin:20px 0;" />
-        <p>Nous avons hâte de vous accueillir !</p>
-        <p style="margin-top: 30px;">Cordialement,<br/>Équipe Elan Expo</p>
-      </div>
-    `,
+    subject: `Votre badge pour l'événement`,
+    html: htmlContent,
     attachments: [
       {
         content: qrBase64,
         filename: 'qrcode.png',
         type: 'image/png',
         disposition: 'inline',
-        content_id: 'qrcode'
+        content_id: 'qrcode@inline'
       },
       {
         content: qrBase64,
