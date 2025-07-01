@@ -5,32 +5,76 @@
   <title>Visitor Log</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; }
-    .logo { text-align: center; margin-bottom: 20px; }
-    .logo img { height: 150px; }
-    h2 { text-align: center; margin-bottom: 10px; }
-    .filters { margin-bottom: 15px; }
-    .filters label { margin-right: 10px; font-weight: bold; }
-    .filters div { margin-bottom: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 150px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .filters {
+      margin-bottom: 15px;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters div {
+      margin-bottom: 10px;
+    }
     input[type="text"] {
-      padding: 8px; width: 100%; max-width: 400px;
-      margin-bottom: 10px; font-size: 14px;
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 10px;
+      font-size: 14px;
     }
     button {
-      padding: 8px 16px; font-size: 14px;
-      margin-bottom: 15px; cursor: pointer;
+      padding: 8px 16px;
+      font-size: 14px;
+      margin-bottom: 15px;
+      cursor: pointer;
     }
     table {
-      width: 100%; border-collapse: collapse;
-      background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
     th, td {
-      padding: 10px; border: 1px solid #ccc; font-size: 13px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      font-size: 13px;
     }
-    th { background-color: #007bff; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    .pagination { text-align: center; margin-top: 20px; }
-    .count { font-weight: bold; margin-bottom: 10px; }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .count {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .dashboard {
+      margin-bottom: 20px;
+      font-weight: bold;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -40,6 +84,11 @@
 
   <h2>Liste des visiteurs</h2>
   <div class="count" id="visitorCount">Total visiteurs: 0</div>
+  <div class="dashboard">
+    <div id="checkinCount">Check-ins: 0</div>
+    <div id="expoBreakdown"></div>
+  </div>
+
   <input type="text" id="search" placeholder="Rechercher un visiteur...">
 
   <div class="filters">
@@ -102,7 +151,7 @@
     async function loadVisitors() {
       const res = await fetch("/api/visitors");
       const data = await res.json();
-      allVisitors = Array.isArray(data) ? data.reverse() : [];
+      allVisitors = data.reverse(); // en son gelen en başta
       applyFilters();
     }
 
@@ -137,8 +186,8 @@
       pageVisitors.forEach(v => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${v.badgeId || v.badgeID || ""}</td>
-          <td>${v.fullName || (v.name || "") + " " + (v.lastName || "")}</td>
+          <td>${v.badgeID || ""}</td>
+          <td>${v.name || ""} ${v.lastName || ""}</td>
           <td>${v.email || ""}</td>
           <td>${v.company || ""}</td>
           <td>${v.country || ""}</td>
@@ -146,13 +195,29 @@
           <td>${v.expoName || ""}</td>
           <td>${v.origin || ""}</td>
           <td>${v.source || ""}</td>
-          <td>${v.timeStamp || v.createdAt || ""}</td>
+          <td>${v.timeStamp || ""}</td>
           <td>${v.checkInTime || "—"}</td>
         `;
         table.appendChild(tr);
       });
 
       countBox.textContent = `Total visiteurs: ${filteredVisitors.length}`;
+
+      // Dashboard kısmı
+      const totalCheckIns = filteredVisitors.filter(v => v.checkInTime).length;
+      document.getElementById("checkinCount").textContent = `Check-ins: ${totalCheckIns}`;
+
+      const breakdown = {};
+      filteredVisitors.forEach(v => {
+        if (!breakdown[v.expoName]) breakdown[v.expoName] = 0;
+        breakdown[v.expoName]++;
+      });
+
+      const expoDiv = document.getElementById("expoBreakdown");
+      expoDiv.innerHTML = Object.entries(breakdown)
+        .map(([expo, count]) => `<div>${expo}: ${count}</div>`)
+        .join('');
+
       renderPagination();
     }
 
@@ -174,10 +239,7 @@
     function exportCSV() {
       let csv = "BadgeID,Name,Email,Company,Country,JobTitle,ExpoName,Origin,Source,Created,CheckIn\n";
       filteredVisitors.forEach(v => {
-        const fullName = v.fullName || `${v.name || ""} ${v.lastName || ""}`;
-        const badge = v.badgeId || v.badgeID || "";
-        const created = v.timeStamp || v.createdAt || "";
-        csv += `"${badge}","${fullName}","${v.email}","${v.company}","${v.country}","${v.jobTitle}","${v.expoName}","${v.origin}","${v.source}","${created}","${v.checkInTime || ""}"\n`;
+        csv += `"${v.badgeID}","${v.name} ${v.lastName}","${v.email}","${v.company}","${v.country}","${v.jobTitle}","${v.expoName}","${v.origin}","${v.source}","${v.timeStamp}","${v.checkInTime || ""}"\n`;
       });
 
       const blob = new Blob([csv], { type: "text/csv" });

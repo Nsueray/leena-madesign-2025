@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -26,13 +25,14 @@ router.post('/', upload.single('file'), async (req, res) => {
     for (let row of data) {
       if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) continue;
 
-      const fullName = row['Visitor Name'] + ' ' + row['Visitor Last Name'];
+      const fullName = `${row['Visitor Name']} ${row['Visitor Last Name']}`;
       const badgeId = 'MI' + Date.now() + Math.floor(Math.random() * 1000);
+
       const visitor = {
-        fullName: fullName,
+        fullName,
         email: row.Email,
         company: row.Company,
-        jobTitle: row['Job Title'] || '',
+        jobTitle: row['Job Title']?.trim() !== '' ? row['Job Title'] : 'N/A',
         country: row['Country.'] || '',
         phone: row.Mobile || '',
         sector: row.Sector || '',

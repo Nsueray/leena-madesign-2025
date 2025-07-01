@@ -11,13 +11,15 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   const {
     name, lastName, email,
-    company, country, jobTitle = 'N/A',
+    company, country, jobTitle,
     source, origin, expoName
   } = req.body;
 
   if (!name || !lastName || !email || !company || !country || !expoName) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
+
+  const cleanedJobTitle = jobTitle && jobTitle.trim() !== '' ? jobTitle : 'N/A';
 
   const badgeID = Date.now().toString();
   const qrDir = path.join(__dirname, '../public/qrcodes');
@@ -27,7 +29,8 @@ router.post('/', async (req, res) => {
 
   const newVisitor = {
     name, lastName, email,
-    badgeID, company, country, jobTitle,
+    badgeID, company, country,
+    jobTitle: cleanedJobTitle,
     source, origin, expoName,
     timeStamp: new Date().toISOString(),
     checkInTime: null
