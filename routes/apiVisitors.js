@@ -1,19 +1,20 @@
 const express = require('express');
-const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const router = express.Router();
 
-const visitorsFile = path.join('/data', 'visitors.json');
+const dbPath = '/data/visitors.db';
+const db = new sqlite3.Database(dbPath);
 
 router.get('/', (req, res) => {
-  if (!fs.existsSync(visitorsFile)) return res.json([]);
-  try {
-    const data = JSON.parse(fs.readFileSync(visitorsFile, 'utf8'));
-    res.json(data);
-  } catch (err) {
-    console.error('❌ Error reading visitors:', err);
-    res.status(500).json({ error: 'Could not load visitors' });
-  }
+  const sql = 'SELECT * FROM visitors ORDER BY timeStamp DESC';
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      console.error('❌ Error reading from SQLite:', err);
+      return res.status(500).json({ error: 'Could not load visitors' });
+    }
+    res.json(rows);
+  });
 });
 
 module.exports = router;

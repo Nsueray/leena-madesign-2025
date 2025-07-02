@@ -4,38 +4,40 @@ const path = require('path');
 const QRCode = require('qrcode');
 const config = require('../config');
 const sendEmail = require('../utils/sendEmail');
+const sqlite3 = require('sqlite3').verbose();
 
 const router = express.Router();
-const visitorsFile = path.join('/data', 'visitors.json');
+const dbPath = '/data/visitors.db';
 const qrDir = path.join(__dirname, '../public/qrcodes');
 
 if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir);
 
-function readVisitors() {
-  if (!fs.existsSync(visitorsFile)) return [];
-  return JSON.parse(fs.readFileSync(visitorsFile));
-}
-
-function safeWriteVisitors(newEntry) {
-  let visitors = [];
-  try {
-    if (fs.existsSync(visitorsFile)) {
-      const fileData = fs.readFileSync(visitorsFile, 'utf8');
-      visitors = JSON.parse(fileData);
-    }
-  } catch (err) {
-    console.error("❌ Error reading visitors file:", err);
-  }
-
-  visitors.push(newEntry);
-
-  try {
-    fs.writeFileSync(visitorsFile, JSON.stringify(visitors, null, 2));
-    console.log("✅ Visitor saved:", newEntry.badgeID);
-  } catch (err) {
-    console.error("❌ Error writing visitors file:", err);
-  }
-}
+// SQLite veritabanını başlat
+const db = new sqlite3.Database(dbPath);
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS visitors (
+      badgeID TEXT PRIMARY KEY,
+      name TEXT,
+      lastName TEXT,
+      email TEXT,
+      company TEXT,
+      phone TEXT,
+      jobTitle TEXT,
+      sector TEXT,
+      country TEXT,
+      website TEXT,
+      visitorCategory TEXT,
+      visitorStatus TEXT,
+      visitorType TEXT,
+      source TEXT,
+      origin TEXT,
+      expoName TEXT,
+      timeStamp TEXT,
+      checkInTime TEXT
+    )
+  `);
+});
 
 router.post('/', async (req, res) => {
   console.log("📨 Incoming webhook data:", req.body);
@@ -55,20 +57,16 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // QR kodu üret
     const qrUrl = `/badge.html?badge_id=${badgeID}`;
     const qrPath = path.join(qrDir, `${badgeID}.png`);
     await QRCode.toFile(qrPath, `https://madesign.leena.app${qrUrl}`);
 
-    // Yeni kayıt
     const newVisitor = {
+      badgeID,
       name,
       lastName,
       email,
       company,
-      origin,
-      source,
-      badgeID,
       phone: body.phone || '',
       jobTitle: body.jobTitle || 'N/A',
       sector: body.sector || '',
@@ -77,26 +75,42 @@ router.post('/', async (req, res) => {
       visitorCategory: body.visitorCategory || '',
       visitorStatus: body.visitorStatus || '',
       visitorType: body.visitorType || '',
+      source,
+      origin,
       expoName,
       timeStamp: new Date().toISOString(),
       checkInTime: ''
     };
 
-    // Kayıt işlemi
-    safeWriteVisitors(newVisitor);
+    db.run(
+      `INSERT OR REPLACE INTO visitors (
+        badgeID, name, lastName, email, company, phone, jobTitle, sector, country, website,
+        visitorCategory, visitorStatus, visitorType, source, origin, expoName, timeStamp, checkInTime
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      Object.values(newVisitor),
+      function (err) {
+        if (err) {
+          console.error("❌ Error writing to SQLite:", err);
+          return res.status(500).json({ message: 'Database write failed' });
+        }
+        console.log("✅ Visitor saved:", badgeID);
+        if (config.sendEmail) {
+          sendEmail({
+            to: email,
+            name,
+            lastName,
+            expoName,
+            qrPath
+          }).then(() => {
+            console.log("✅ Email sent to", email);
+          }).catch((e) => {
+            console.error("❌ Email error:", e);
+          });
+        }
 
-    // E-posta gönder
-    if (config.sendEmail) {
-      await sendEmail({
-        to: email,
-        name,
-        lastName,
-        expoName,
-        qrPath
-      });
-    }
-
-    res.status(200).json({ message: 'Webhook received and processed', badgeID });
+        res.status(200).json({ message: 'Webhook received and processed', badgeID });
+      }
+    );
   } catch (err) {
     console.error('Webhook error:', err);
     res.status(500).json({ message: 'Server error' });
