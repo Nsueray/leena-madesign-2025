@@ -6,7 +6,7 @@ const config = require('../config');
 const sendEmail = require('../utils/sendEmail');
 
 const router = express.Router();
-const visitorsFile = path.join(__dirname, '../data/visitors.json');
+const visitorsFile = path.join('/data', 'visitors.json');
 const qrDir = path.join(__dirname, '../public/qrcodes');
 
 if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir);
