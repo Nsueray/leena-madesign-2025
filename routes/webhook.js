@@ -37,7 +37,7 @@ function safeWriteVisitors(newEntry) {
   }
 }
 
-router.post('/webhook', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const body = req.body;
 
