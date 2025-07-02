@@ -42,7 +42,8 @@ router.post('/', async (req, res) => {
     await sendEmail({
       to: email,
       subject: config.emailSubject,
-      fullName: `${name} ${lastName}`,
+      name,
+      lastName,
       expoName,
       qrPath
     });
