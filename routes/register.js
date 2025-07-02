@@ -42,8 +42,9 @@ router.post('/', async (req, res) => {
     await sendEmail({
       to: email,
       subject: config.emailSubject,
-      text: config.emailBody.replace('[NAME]', `${name} ${lastName}`),
-      attachments: [{ filename: 'qrcode.png', path: qrPath }]
+      fullName: `${name} ${lastName}`,
+      expoName,
+      qrPath
     });
   }
 
