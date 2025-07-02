@@ -38,6 +38,7 @@ function safeWriteVisitors(newEntry) {
 }
 
 router.post('/', async (req, res) => {
+  console.log("📨 Incoming webhook data:", req.body);
   try {
     const body = req.body;
 
