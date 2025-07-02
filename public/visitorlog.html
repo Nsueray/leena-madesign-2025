@@ -83,6 +83,7 @@
       <input type="checkbox" class="originFilter" value="form"> form
       <input type="checkbox" class="originFilter" value="massimport"> massimport
       <input type="checkbox" class="originFilter" value="crm"> crm
+      <input type="checkbox" class="originFilter" value="zohoform"> zohoform
     </div>
     <button onclick="exportCSV()">Exporter en Excel</button>
   </div>
@@ -189,11 +190,14 @@
 
       const expoStats = {};
       filteredVisitors.forEach(v => {
-        expoStats[v.expoName] = (expoStats[v.expoName] || 0) + 1;
+        const expo = v.expoName || 'Unknown';
+        expoStats[expo] = expoStats[expo] || { total: 0, checkins: 0 };
+        expoStats[expo].total += 1;
+        if (v.checkInTime) expoStats[expo].checkins += 1;
       });
 
       expoBreakdown.innerHTML = Object.entries(expoStats)
-        .map(([expo, count]) => `<div>${expo}: ${count}</div>`)
+        .map(([expo, stats]) => `<div>${expo}: ${stats.total} visiteurs, ${stats.checkins} check-ins</div>`)
         .join('');
 
       renderPagination();
