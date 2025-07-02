@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
   if (config.sendEmail) {
     await sendEmail({
       to: email,
-      subject: config.emailSubject,
+      subject: `Votre code QR – ${expoName} / Your QR Code – ${expoName}`,
       name,
       lastName,
       expoName,
