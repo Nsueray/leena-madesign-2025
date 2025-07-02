@@ -42,13 +42,13 @@ router.post('/', async (req, res) => {
   try {
     const body = req.body;
 
-    const name = body.firstName || '';
+    const name = body.name || '';
     const lastName = body.lastName || '';
-    const badgeID = body.badgeNumber || Date.now().toString();
+    const badgeID = body.badgeID || Date.now().toString();
     const email = body.email || '';
-    const company = body.companyName || '';
+    const company = body.company || '';
     const origin = 'zohoform';
-    const source = body.visitorSource || '';
+    const source = body.source || '';
     const expoName = body.expoName || 'Madesign';
 
     if (!name || !lastName || !email || !company) {
