@@ -31,62 +31,71 @@ function safeWriteVisitors(newEntry) {
 
   try {
     fs.writeFileSync(visitorsFile, JSON.stringify(visitors, null, 2));
-    console.log("✅ Visitor saved:", newEntry.id || newEntry.fullName);
+    console.log("✅ Visitor saved:", newEntry.badgeID);
   } catch (err) {
     console.error("❌ Error writing visitors file:", err);
   }
 }
 
-router.post('/', async (req, res) => {
+router.post('/webhook', async (req, res) => {
   try {
     const body = req.body;
 
-    const fullName = `${body.firstName || ''} ${body.lastName || ''}`.trim();
-    const badgeId = body.badgeNumber || Date.now().toString();
+    const name = body.firstName || '';
+    const lastName = body.lastName || '';
+    const badgeID = body.badgeNumber || Date.now().toString();
     const email = body.email || '';
     const company = body.companyName || '';
     const origin = 'zohoform';
     const source = body.visitorSource || '';
+    const expoName = body.expoName || 'Madesign';
 
-    if (!fullName || !email || !company) {
+    if (!name || !lastName || !email || !company) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const qrUrl = `/badge.html?badge_id=${badgeId}`;
-    const qrPath = path.join(qrDir, `${badgeId}.png`);
-    await QRCode.toFile(qrPath, `https://leena4-kenya-final-live.onrender.com${qrUrl}`);
+    // QR kodu üret
+    const qrUrl = `/badge.html?badge_id=${badgeID}`;
+    const qrPath = path.join(qrDir, `${badgeID}.png`);
+    await QRCode.toFile(qrPath, `https://madesign.leena.app${qrUrl}`);
 
+    // Yeni kayıt
     const newVisitor = {
-      id: badgeId,
-      fullName,
+      name,
+      lastName,
       email,
       company,
       origin,
       source,
+      badgeID,
       phone: body.phone || '',
-      jobTitle: body.jobTitle || '',
+      jobTitle: body.jobTitle || 'N/A',
       sector: body.sector || '',
       country: body.country || '',
       website: body.website || '',
       visitorCategory: body.visitorCategory || '',
       visitorStatus: body.visitorStatus || '',
-      createdAt: new Date().toISOString()
+      visitorType: body.visitorType || '',
+      expoName,
+      timeStamp: new Date().toISOString(),
+      checkInTime: ''
     };
 
-    const visitors = readVisitors();
-    visitors.push(newVisitor);
+    // Kayıt işlemi
     safeWriteVisitors(newVisitor);
 
+    // E-posta gönder
     if (config.sendEmail) {
       await sendEmail({
         to: email,
-        subject: config.emailSubject,
-        text: config.emailBody.replace('[NAME]', fullName),
-        attachments: [{ filename: 'qrcode.png', path: qrPath }]
+        name,
+        lastName,
+        expoName,
+        qrPath
       });
     }
 
-    res.status(200).json({ message: 'Webhook received and processed', badgeId });
+    res.status(200).json({ message: 'Webhook received and processed', badgeID });
   } catch (err) {
     console.error('Webhook error:', err);
     res.status(500).json({ message: 'Server error' });
