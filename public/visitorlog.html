@@ -144,7 +144,7 @@
       filteredVisitors = allVisitors.filter(v => {
         const matchExpo = expoSelected.length === 0 || expoSelected.includes(v.expoName);
         const matchSource = sourceSelected.length === 0 || sourceSelected.includes(v.source);
-        const matchOrigin = originSelected.length === 0 || originSelected.includes(v.origin);
+        const matchOrigin = originSelected.length === 0 || originSelected.includes(v.origin || 'zohoform');
         const matchText = Object.values(v).join(" ").toLowerCase().includes(searchText);
         const matchDate = !selectedDate || (v.timeStamp && v.timeStamp.startsWith(selectedDate));
         return matchExpo && matchSource && matchOrigin && matchText && matchDate;
