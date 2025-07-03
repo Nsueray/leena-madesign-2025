@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
     origin,
     expoName,
     timeStamp: new Date().toISOString(),
-    checkInTime: ''
+    checkInTime: new Date().toISOString()
   };
 
   db.run(
