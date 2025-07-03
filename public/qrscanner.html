@@ -1,30 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>QR Scanner with Manual Entry</title>
+  <title>Scan Badge - Madesign</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      background-color: #2b2f3a;
-      color: #fff;
+      background-color: #f7f9fb;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 50px;
+      color: #333;
+      text-align: center;
+      padding: 20px;
     }
-    input, button {
-      padding: 14px;
+    .logo {
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 100px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 12px;
       font-size: 16px;
-      width: 320px;
       margin: 10px 0;
-      border-radius: 5px;
-      border: none;
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
     label {
-      margin-top: 20px;
-      font-size: 16px;
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .italic {
+      font-style: italic;
+      font-size: 12px;
+      color: #666;
     }
     .hidden {
       display: none;
@@ -32,20 +46,39 @@
   </style>
 </head>
 <body>
-  <h2>Scan QR or Enter Badge ID</h2>
-  <input id="scannerInput" placeholder="Badge ID or QR" autofocus />
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+  </div>
 
+  <h2>Scanner un badge</h2>
+
+  <input id="scannerInput" placeholder="Scannez le badge..." autofocus />
   <label>
     <input type="checkbox" id="manualToggle" />
-    Manual Registration
+    Enregistrement manuel <span class="italic">Manual Registration</span>
   </label>
 
   <div id="manualForm" class="hidden">
-    <input type="text" id="inputName" placeholder="First Name" required />
-    <input type="text" id="inputLastName" placeholder="Last Name" required />
-    <input type="email" id="inputEmail" placeholder="Email" required />
-    <input type="text" id="inputCompany" placeholder="Company" required />
-    <button onclick="submitManual()">Register & Print</button>
+    <label>Nom <span class="italic">First Name</span></label>
+    <input type="text" id="inputName" required />
+
+    <label>Prénom <span class="italic">Last Name</span></label>
+    <input type="text" id="inputLastName" required />
+
+    <label>Email</label>
+    <input type="email" id="inputEmail" required />
+
+    <label>Société <span class="italic">Company</span></label>
+    <input type="text" id="inputCompany" required />
+
+    <label>Salon <span class="italic">Exhibition</span></label>
+    <select id="inputExpo">
+      <option value="MadesignMorocco2025">Madesign</option>
+      <option value="MegaLightingMorocco2025">Lighting</option>
+      <option value="MegaCeramicaMorocco2025">Ceramica</option>
+    </select>
+
+    <button onclick="submitManual()">Valider et imprimer</button>
   </div>
 
   <script>
@@ -71,9 +104,10 @@
       const lastName = document.getElementById("inputLastName").value.trim();
       const email = document.getElementById("inputEmail").value.trim();
       const company = document.getElementById("inputCompany").value.trim();
+      const expoName = document.getElementById("inputExpo").value;
 
-      if (!name || !lastName || !email || !company) {
-        alert("Please fill in all required fields.");
+      if (!name || !lastName || !email || !company || !expoName) {
+        alert("Veuillez remplir tous les champs obligatoires.");
         return;
       }
 
@@ -85,16 +119,21 @@
           lastName,
           email,
           company,
+          expoName,
           origin: "onsite",
-          source: "Manual - qrscanner"
+          source: "Manual Registration",
+          country: "Maroc",
+          jobTitle: "N/A",
+          timeStamp: new Date().toISOString(),
+          checkInTime: new Date().toISOString()
         })
       });
 
       const result = await res.json();
-      if (result.badgeId) {
-        window.location.href = `/badge.html?badge_id=${result.badgeId}`;
+      if (result.badgeID) {
+        window.location.href = `/badge.html?badge_id=${result.badgeID}`;
       } else {
-        alert("Registration failed.");
+        alert("Erreur lors de l'enregistrement.");
       }
     }
   </script>
