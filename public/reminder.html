@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rappel de présence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      background-color: #f7f9fb;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    label, input, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    input, textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #d4edda;
+      color: #155724;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Envoyer un rappel de présence</h1>
+  <label for="date">Date (YYYY-MM-DD):</label>
+  <input type="date" id="date" required>
+
+  <label for="expo">Nom du Salon (Expo Name):</label>
+  <input type="text" id="expo" placeholder="Ex: MadesignMorocco2025" required>
+
+  <label for="subject">Sujet de l'e-mail:</label>
+  <input type="text" id="subject" value="Nous vous attendons au salon Madesign !" required>
+
+  <label for="html">Contenu HTML de l'e-mail:</label>
+  <textarea id="html" rows="10" placeholder="Ecrivez ici votre message HTML..."></textarea>
+
+  <button onclick="sendReminder()">Envoyer</button>
+
+  <div class="result" id="resultBox"></div>
+
+  <script>
+    async function sendReminder() {
+      const date = document.getElementById('date').value;
+      const expo = document.getElementById('expo').value;
+      const subject = document.getElementById('subject').value;
+      const html = document.getElementById('html').value;
+
+      const res = await fetch('/api/send-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, expoName: expo, subject, html })
+      });
+
+      const data = await res.json();
+      const resultBox = document.getElementById('resultBox');
+      if (res.ok) {
+        resultBox.textContent = `✅ ${data.sentCount} rappels envoyés avec succès.`;
+        resultBox.style.display = 'block';
+        resultBox.style.backgroundColor = '#d4edda';
+        resultBox.style.color = '#155724';
+      } else {
+        resultBox.textContent = `❌ Erreur: ${data.message}`;
+        resultBox.style.display = 'block';
+        resultBox.style.backgroundColor = '#f8d7da';
+        resultBox.style.color = '#721c24';
+      }
+    }
+  </script>
+</body>
+</html>
