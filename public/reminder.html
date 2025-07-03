@@ -18,7 +18,7 @@
       margin-bottom: 30px;
     }
     .logo img {
-      height: 80px;
+      height: 150px;
     }
     h1 {
       text-align: center;
@@ -30,7 +30,7 @@
       display: block;
       margin: 15px 0 5px;
     }
-    input, textarea, button {
+    input, textarea, select, button {
       width: 100%;
       max-width: 700px;
       padding: 12px;
@@ -54,7 +54,6 @@
       padding: 15px;
       margin-top: 20px;
       border-radius: 8px;
-      display: none;
     }
     .status-box span {
       display: block;
@@ -80,7 +79,12 @@
   <input type="date" id="date" required>
 
   <label for="expo">Exhibition Name:</label>
-  <input type="text" id="expo" placeholder="e.g. MadesignMorocco2025" required>
+  <select id="expo" required>
+    <option value="">-- Select Exhibition --</option>
+    <option value="MadesignMorocco2025">MadesignMorocco2025</option>
+    <option value="MegaLightingMorocco2025">MegaLightingMorocco2025</option>
+    <option value="MegaCeramicaMorocco2025">MegaCeramicaMorocco2025</option>
+  </select>
 
   <button onclick="checkStats()">Check Reminder Status</button>
 
@@ -91,12 +95,12 @@
   </div>
 
   <label for="subject">Email Subject:</label>
-  <input type="text" id="subject" value="We're waiting for you at the fair!" required>
+  <input type="text" id="subject" value="We are waiting for you at the fair!" required>
 
   <label for="html">Email HTML Content:</label>
-  <textarea id="html" rows="10" placeholder="Enter HTML content for your reminder email..."></textarea>
+  <textarea id="html" rows="10" placeholder="Enter the reminder email content in HTML..."></textarea>
 
-  <button onclick="sendReminder()">Send Email</button>
+  <button onclick="sendReminder()">Send Reminder Email</button>
 
   <div class="result" id="resultBox"></div>
 
@@ -104,7 +108,7 @@
     async function checkStats() {
       const date = document.getElementById('date').value;
       const expo = document.getElementById('expo').value;
-      if (!date || !expo) return alert("Please select date and expo name first.");
+      if (!date || !expo) return alert("Please select both date and exhibition.");
 
       const res = await fetch(`/api/reminder-stats?date=${date}&expoName=${expo}`);
       const data = await res.json();
