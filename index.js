@@ -4,6 +4,7 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3011;
 const webhookRoute = require('./routes/webhook');
+const downloadDb = require('./routes/downloadDb');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -13,6 +14,7 @@ app.use('/webhook', webhookRoute);
 app.use('/api/visitors', require('./routes/apiVisitors'));
 app.use('/api/checkins', require('./routes/apiCheckins'));
 app.use('/register', require('./routes/register'));
+app.use('/download-db', downloadDb);
 
 const massImportRoute = require('./routes/massImport');
 app.use('/massimport', massImportRoute);
