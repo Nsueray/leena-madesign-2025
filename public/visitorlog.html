@@ -161,6 +161,7 @@
     function updateTable() {
       const start = (currentPage - 1) * pageSize;
       const end = start + pageSize;
+      filteredVisitors.sort((a, b) => new Date(b.timeStamp) - new Date(a.timeStamp));
       const pageVisitors = filteredVisitors.slice(start, end);
 
       table.innerHTML = "";

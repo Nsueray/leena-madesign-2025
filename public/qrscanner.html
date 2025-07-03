@@ -71,6 +71,9 @@
     <label>Société <span class="italic">Company</span></label>
     <input type="text" id="inputCompany" required />
 
+    <label>Poste <span class="italic">Job Title</span></label>
+    <input type="text" id="inputJobTitle" required />
+
     <label>Salon <span class="italic">Exhibition</span></label>
     <select id="inputExpo">
       <option value="MadesignMorocco2025">Madesign</option>
@@ -104,6 +107,7 @@
       const lastName = document.getElementById("inputLastName").value.trim();
       const email = document.getElementById("inputEmail").value.trim();
       const company = document.getElementById("inputCompany").value.trim();
+      const jobTitle = document.getElementById("inputJobTitle").value.trim() || 'N/A';
       const expoName = document.getElementById("inputExpo").value;
 
       if (!name || !lastName || !email || !company || !expoName) {
@@ -119,11 +123,11 @@
           lastName,
           email,
           company,
+          jobTitle,
           expoName,
           origin: "onsite",
           source: "Manual Registration",
           country: "Maroc",
-          jobTitle: "N/A",
           timeStamp: new Date().toISOString(),
           checkInTime: new Date().toISOString()
         })
