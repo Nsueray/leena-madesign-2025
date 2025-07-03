@@ -1,41 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <title>Admin Panel – Elan Expo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background-color: #1e1e2f; color: #fff; padding: 40px; }
-    h1 { text-align: center; }
-    .button-container { display: flex; flex-direction: column; gap: 15px; max-width: 300px; margin: auto; margin-top: 40px; }
-    a.button {
-      display: block;
-      padding: 15px;
-      background-color: #4CAF50;
-      color: white;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      padding: 40px;
       text-align: center;
-      text-decoration: none;
-      font-weight: bold;
-      border-radius: 6px;
     }
-    a.button:hover {
-      background-color: #45a049;
+    .logo img {
+      height: 120px;
+      margin-bottom: 20px;
     }
-    .desc {
-      font-size: 12px;
-      color: #ccc;
-      text-align: center;
+    h1 {
+      color: #333;
       margin-bottom: 40px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .card a {
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    .icon {
+      font-size: 32px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Admin Panel</h1>
-  <div class="desc">Access all system tools and pages from here</div>
-  <div class="button-container">
-    <a class="button" href="/form-onsite.html">Form Onsite</a>
-    <a class="button" href="/qrscanner.html">QR Scanner</a>
-    <a class="button" href="/visitorlog.html">Visitor Log</a>
-    <a class="button" href="/mass-import.html">Mass Import</a>
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h1>Admin Panel – Elan Expo</h1>
+
+  <div class="grid">
+    <div class="card">
+      <div class="icon">📝</div>
+      <div>Onsite Registration</div>
+      <a href="form-onsite.html" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">📋</div>
+      <div>Visitor Log</div>
+      <a href="visitorlog.html" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">📦</div>
+      <div>Mass Import</div>
+      <a href="massimport.html" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">📤</div>
+      <div>Send Reminder</div>
+      <a href="reminder.html" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">📨</div>
+      <div>Manual QR Sender</div>
+      <a href="qrsender.html" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">📷</div>
+      <div>QR Scanner & Badge Print</div>
+      <a href="qrscanner.html" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">🎫</div>
+      <div>Badge Preview (Manual)</div>
+      <a href="badge.html?badge_id=YOUR_ID" target="_blank">Open</a>
+    </div>
+
+    <div class="card">
+      <div class="icon">⬇️</div>
+      <div>Download Database</div>
+      <a href="/download-db" target="_blank">Download</a>
+    </div>
   </div>
 </body>
 </html>
