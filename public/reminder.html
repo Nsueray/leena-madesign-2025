@@ -1,31 +1,43 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Rappel de présence</title>
+  <title>Reminder Sender – Elan Expo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 800px;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 40px;
+      max-width: 900px;
       margin: auto;
-      padding: 30px;
-      background-color: #f7f9fb;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo img {
+      height: 80px;
     }
     h1 {
-      color: #333;
       text-align: center;
+      color: #333;
+      margin-bottom: 30px;
     }
-    label, input, button {
+    label {
+      font-weight: bold;
       display: block;
-      width: 100%;
-      margin-bottom: 15px;
-      font-size: 16px;
+      margin: 15px 0 5px;
     }
-    input, textarea {
-      padding: 10px;
-      border: 1px solid #ccc;
+    input, textarea, button {
+      width: 100%;
+      max-width: 700px;
+      padding: 12px;
+      font-size: 16px;
       border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
     }
     button {
       background-color: #007bff;
@@ -36,47 +48,73 @@
     button:hover {
       background-color: #0056b3;
     }
-    .result {
+    .status-box {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 15px;
       margin-top: 20px;
-      padding: 12px;
-      background-color: #d4edda;
-      color: #155724;
+      border-radius: 8px;
       display: none;
     }
-    .stats {
-      background: #e9ecef;
-      padding: 10px;
-      border-radius: 6px;
+    .status-box span {
+      display: block;
+      margin: 8px 0;
+      font-weight: bold;
+    }
+    .result {
+      display: none;
+      padding: 12px;
       margin-top: 20px;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
-  <h1>Envoyer un rappel de présence</h1>
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+  </div>
 
-  <label for="date">Date (YYYY-MM-DD):</label>
+  <h1>Send Reminder Emails</h1>
+
+  <label for="date">Select Date:</label>
   <input type="date" id="date" required>
 
-  <label for="expo">Nom du Salon (Expo Name):</label>
-  <input type="text" id="expo" placeholder="Ex: MadesignMorocco2025" required>
+  <label for="expo">Exhibition Name:</label>
+  <input type="text" id="expo" placeholder="e.g. MadesignMorocco2025" required>
 
-  <label for="subject">Sujet de l'e-mail:</label>
-  <input type="text" id="subject" value="Nous vous attendons au salon Madesign !" required>
+  <button onclick="checkStats()">Check Reminder Status</button>
 
-  <label for="html">Contenu HTML de l'e-mail:</label>
-  <textarea id="html" rows="10" placeholder="Ecrivez ici votre message HTML..."></textarea>
-
-  <button onclick="sendReminder()">Envoyer</button>
-
-  <div class="stats" id="statsBox">
-    <p><strong>Total visiteurs:</strong> —</p>
-    <p><strong>Sans check-in ce jour:</strong> —</p>
-    <p><strong>Emails uniques à rappeler:</strong> —</p>
+  <div class="status-box" id="statsBox">
+    <span id="totalVisitors">Total visitors: 0</span>
+    <span id="pendingVisitors">Not checked-in on selected date: 0</span>
+    <span id="uniqueEmails">Unique emails pending: 0</span>
   </div>
+
+  <label for="subject">Email Subject:</label>
+  <input type="text" id="subject" value="We're waiting for you at the fair!" required>
+
+  <label for="html">Email HTML Content:</label>
+  <textarea id="html" rows="10" placeholder="Enter HTML content for your reminder email..."></textarea>
+
+  <button onclick="sendReminder()">Send Email</button>
 
   <div class="result" id="resultBox"></div>
 
   <script>
+    async function checkStats() {
+      const date = document.getElementById('date').value;
+      const expo = document.getElementById('expo').value;
+      if (!date || !expo) return alert("Please select date and expo name first.");
+
+      const res = await fetch(`/api/reminder-stats?date=${date}&expoName=${expo}`);
+      const data = await res.json();
+
+      document.getElementById('statsBox').style.display = 'block';
+      document.getElementById('totalVisitors').textContent = `Total visitors: ${data.totalVisitors}`;
+      document.getElementById('pendingVisitors').textContent = `Not checked-in on selected date: ${data.pendingVisitors}`;
+      document.getElementById('uniqueEmails').textContent = `Unique emails pending: ${data.uniqueEmails}`;
+    }
+
     async function sendReminder() {
       const date = document.getElementById('date').value;
       const expo = document.getElementById('expo').value;
@@ -91,24 +129,16 @@
 
       const data = await res.json();
       const resultBox = document.getElementById('resultBox');
-      const statsBox = document.getElementById('statsBox');
+      resultBox.style.display = 'block';
 
       if (res.ok) {
-        resultBox.textContent = `✅ ${data.sentCount} rappels envoyés avec succès.`;
-        resultBox.style.display = 'block';
         resultBox.style.backgroundColor = '#d4edda';
         resultBox.style.color = '#155724';
-
-        statsBox.innerHTML = `
-          <p><strong>Total visiteurs:</strong> ${data.totalVisitors}</p>
-          <p><strong>Sans check-in ce jour:</strong> ${data.uncheckedVisitors}</p>
-          <p><strong>Emails uniques à rappeler:</strong> ${data.uniqueEmails}</p>
-        `;
+        resultBox.textContent = `✅ ${data.sentCount} reminders sent successfully.`;
       } else {
-        resultBox.textContent = `❌ Erreur: ${data.message}`;
-        resultBox.style.display = 'block';
         resultBox.style.backgroundColor = '#f8d7da';
         resultBox.style.color = '#721c24';
+        resultBox.textContent = `❌ Error: ${data.message}`;
       }
     }
   </script>
