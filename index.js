@@ -1,4 +1,6 @@
 require('dotenv').config();
+const sendReminderRoute = require('./routes/sendReminder');
+const reminderStatsRoute = require('./routes/reminderStats'); // ✅ yeni eklendi
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -15,6 +17,8 @@ app.use('/api/visitors', require('./routes/apiVisitors'));
 app.use('/api/checkins', require('./routes/apiCheckins'));
 app.use('/register', require('./routes/register'));
 app.use('/download-db', downloadDb);
+app.use('/api/send-reminder', sendReminderRoute);
+app.use('/api/reminder-stats', reminderStatsRoute); // ✅ yeni eklendi
 
 const massImportRoute = require('./routes/massImport');
 app.use('/massimport', massImportRoute);
