@@ -52,7 +52,7 @@ router.post('/', upload.single('file'), async (req, res) => {
 
     await safeWriteVisitors(visitors);
     fs.unlinkSync(file.path);
-    res.send(`✅ Successfully imported ${visitors.length} visitors.`);
+    res.json({ message: `✅ Successfully imported ${visitors.length} visitors.` });
   } catch (err) {
     console.error('❌ Import error:', err);
     res.status(500).send('Server error during import.');
