@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Exhibitor Mass Import – Elan Expo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fb;
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo img {
+      height: 100px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .preview {
+      margin-top: 30px;
+    }
+    .preview-item {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h2>Mass Print Exhibitor Badges from Excel</h2>
+  <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" />
+  <button onclick="processFile()">Generate Badges</button>
+
+  <div id="preview" class="preview"></div>
+
+  <script>
+    async function processFile() {
+      const fileInput = document.getElementById("excelFile");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select a file.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        const previewBox = document.getElementById("preview");
+        previewBox.innerHTML = '';
+
+        for (let row of rows) {
+          const name = row['First Name'] || row['Name'] || '';
+          const lastName = row['Last Name'] || '';
+          const email = row['Email'] || '';
+          const company = row['Company'] || '';
+          const expoName = row['Exhibition'] || '';
+
+          if (!name || !lastName || !email || !company || !expoName) continue;
+
+          const badgeID = Date.now().toString() + Math.floor(Math.random() * 1000);
+
+          previewBox.innerHTML += `
+            <div class="preview-item">
+              <strong>${name} ${lastName}</strong><br/>
+              ${company}<br/>
+              ${expoName}
+              <br><br>
+              <button onclick="window.open('/badge.html?badge_id=${badgeID}&name=${encodeURIComponent(name)}&lastName=${encodeURIComponent(lastName)}&company=${encodeURIComponent(company)}', '_blank')">Print Badge</button>
+            </div>
+          `;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  </script>
+</body>
+</html>
