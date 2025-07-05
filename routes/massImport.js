@@ -3,73 +3,86 @@ const router = express.Router();
 const multer = require('multer');
 const xlsx = require('xlsx');
 const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { createQRAndSendEmail } = require('../utils/sendEmail');
-// const { safeWriteVisitors } = require('../utils/safeWriteVisitors');
-const db = require('../utils/sqlite-db'); // örnek: burada sqlite3.Database bağlantınızı alın
 
 const upload = multer({ dest: 'uploads/' });
+const dbPath = path.join('/data', 'visitors.db');
+const db = new sqlite3.Database(dbPath);
 
 router.post('/', upload.single('file'), async (req, res) => {
   try {
-    const sendEmails = !!req.body.sendEmails;       // artık checkbox=on da true olur
+    const sendEmails = !!req.body.sendEmails;             // checkbox=on da true olur
     const emailTemplate = req.body.emailTemplate || '';
     const file = req.file;
-    if (!file) return res.status(400).send('No file uploaded.');
+    if (!file) return res.status(400).json({ message: 'No file uploaded.' });
 
     const workbook = xlsx.readFile(file.path);
     const sheetName = workbook.SheetNames[0];
-    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-    let imported = 0, emailsSent = 0;
+    let imported = 0;
+    let emailsSent = 0;
 
-    for (let row of data) {
+    for (const row of rows) {
       if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) continue;
       imported++;
 
-      const badgeId = 'MI' + Date.now() + Math.floor(Math.random()*1000);
+      const badgeID = 'MI' + Date.now() + Math.floor(Math.random() * 1000);
       const visitor = {
-        badgeID: badgeId,
+        badgeID,
         name: row['Visitor Name'],
         lastName: row['Visitor Last Name'],
         email: row.Email,
         company: row.Company,
-        jobTitle: row['Job Title']?.trim()||'N/A',
-        country: row['Country.']||'',
-        phone: row.Mobile||'',
-        sector: row.Sector||'',
+        country: row['Country.'] || '',
+        jobTitle: row['Job Title']?.trim() || 'N/A',
+        source: row['Visitor Source'] || '',
         origin: 'massimport',
-        source: row['Visitor Source']||'',
-        expoName: row['Expo Name']||'',
+        expoName: row['Expo Name'] || '',
         timeStamp: new Date().toISOString(),
-        checkInTime: ''  // veya null
+        checkInTime: ''
       };
 
-      // 1) DB'ye kaydet (register.js içindeki INSERT sorgusunu kopyalayın)
-      await new Promise((done, fail) => {
+      // 1) SQLite'a insert
+      await new Promise((resolve, reject) => {
         db.run(
-          `INSERT INTO visitors 
-            (badgeID,name,lastName,email,company,country,jobTitle,source,origin,expoName,timeStamp,checkInTime)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-          Object.values(visitor),
-          err => err ? fail(err) : done()
+          `INSERT OR REPLACE INTO visitors (
+             badgeID, name, lastName, email, company, country,
+             jobTitle, source, origin, expoName, timeStamp, checkInTime
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            visitor.badgeID,
+            visitor.name,
+            visitor.lastName,
+            visitor.email,
+            visitor.company,
+            visitor.country,
+            visitor.jobTitle,
+            visitor.source,
+            visitor.origin,
+            visitor.expoName,
+            visitor.timeStamp,
+            visitor.checkInTime
+          ],
+          err => err ? reject(err) : resolve()
         );
       });
 
-      // 2) e-posta
+      // 2) E-posta gönder (isteğe bağlı)
       if (sendEmails) {
-        await createQRAndSendEmail(visitor, badgeId, emailTemplate);
+        await createQRAndSendEmail(visitor, badgeID, emailTemplate);
         emailsSent++;
       }
     }
 
     fs.unlinkSync(file.path);
-
-    res.json({ imported, emailsSent });
+    return res.json({ imported, emailsSent });
 
   } catch (err) {
     console.error('❌ Import error:', err);
-    res.status(500).json({ message: 'Server error during import.' });
+    return res.status(500).json({ message: 'Server error during import.' });
   }
 });
 
