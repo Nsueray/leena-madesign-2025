@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visitor Mass Import</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background-color: #f7f9fb;
+      font-family: Arial, sans-serif;
+      color: #333;
+      text-align: center;
+      padding: 30px;
+    }
+    .logo {
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 100px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input, label, button {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h2>Mass Import Visitors from Excel</h2>
+
+  <input type="file" id="excelFile" accept=".xlsx" />
+  <br />
+  <label>
+    <input type="checkbox" id="skipExisting" checked />
+    Skip sending email to existing emails in database
+  </label>
+  <br />
+  <button onclick="uploadFile()">Upload & Process</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById("excelFile");
+      const skipExisting = document.getElementById("skipExisting").checked;
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select an Excel (.xlsx) file.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("skipExisting", skipExisting);
+
+      const res = await fetch("/massimport", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await res.json();
+      document.getElementById("result").textContent =
+        res.ok ? `✅ Imported: ${result.imported}, Emails sent: ${result.emailsSent}`
+              : `❌ Error: ${result.message}`;
+    }
+  </script>
+</body>
+</html>
