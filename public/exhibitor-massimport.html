@@ -1,108 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Exhibitor Mass Import – Elan Expo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Exhibitor Mass Badge Print</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f7f9fb;
+      background-color: #f4f6f8;
       padding: 40px;
-      max-width: 800px;
-      margin: auto;
-    }
-    .logo {
       text-align: center;
-      margin-bottom: 30px;
     }
     .logo img {
-      height: 100px;
+      height: 120px;
+      margin-bottom: 30px;
     }
-    h2 {
-      text-align: center;
-      color: #333;
+    h1 {
+      margin-bottom: 20px;
     }
-    input, button {
-      width: 100%;
+    input[type="file"] {
       padding: 12px;
+      margin-bottom: 20px;
       font-size: 16px;
-      margin-top: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
     }
     button {
+      padding: 12px 20px;
       background-color: #007bff;
       color: white;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
     }
     button:hover {
       background-color: #0056b3;
     }
-    .preview {
+    .list {
       margin-top: 30px;
+      text-align: left;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .preview-item {
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ddd;
+    .list div {
+      background: white;
+      padding: 12px;
       margin-bottom: 10px;
       border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
   </style>
 </head>
 <body>
   <div class="logo">
-    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo">
   </div>
+  <h1>Mass Badge Print (Exhibitors)</h1>
+  <input type="file" id="excelFile" accept=".xlsx,.xls">
+  <button onclick="handleFile()">Load & Print</button>
 
-  <h2>Mass Print Exhibitor Badges from Excel</h2>
-  <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" />
-  <button onclick="processFile()">Generate Badges</button>
+  <div class="list" id="badgeList"></div>
 
-  <div id="preview" class="preview"></div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    async function processFile() {
-      const fileInput = document.getElementById("excelFile");
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Please select a file.");
-        return;
-      }
+    function handleFile() {
+      const file = document.getElementById('excelFile').files[0];
+      if (!file) return alert('Please upload an Excel file.');
 
       const reader = new FileReader();
-      reader.onload = async function (e) {
+      reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        const rows = XLSX.utils.sheet_to_json(sheet);
 
-        const previewBox = document.getElementById("preview");
-        previewBox.innerHTML = '';
+        const badgeList = document.getElementById('badgeList');
+        badgeList.innerHTML = '';
 
-        for (let row of rows) {
-          const name = row['First Name'] || row['Name'] || '';
+        rows.forEach(row => {
+          const name = row['Name'] || row['First Name'] || '';
           const lastName = row['Last Name'] || '';
-          const email = row['Email'] || '';
           const company = row['Company'] || '';
-          const expoName = row['Exhibition'] || '';
+          if (!name || !company) return;
 
-          if (!name || !lastName || !email || !company || !expoName) continue;
+          const fullName = `${name} ${lastName}`.trim();
+          const badgeId = Date.now().toString() + Math.floor(Math.random() * 1000);
 
-          const badgeID = Date.now().toString() + Math.floor(Math.random() * 1000);
+          const div = document.createElement('div');
+          div.innerHTML = `<strong>${fullName}</strong><br>${company}`;
+          badgeList.appendChild(div);
 
-          previewBox.innerHTML += `
-            <div class="preview-item">
-              <strong>${name} ${lastName}</strong><br/>
-              ${company}<br/>
-              ${expoName}
-              <br><br>
-              <button onclick="window.open('/badge.html?badge_id=${badgeID}&name=${encodeURIComponent(name)}&lastName=${encodeURIComponent(lastName)}&company=${encodeURIComponent(company)}', '_blank')">Print Badge</button>
-            </div>
-          `;
-        }
+          const badgeUrl = `/badge.html?badge_id=${badgeId}&name=${encodeURIComponent(name)}&lastName=${encodeURIComponent(lastName)}&company=${encodeURIComponent(company)}`;
+          window.open(badgeUrl, '_blank');
+        });
       };
       reader.readAsArrayBuffer(file);
     }
