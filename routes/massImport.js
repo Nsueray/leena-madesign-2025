@@ -1,10 +1,11 @@
+// routes/massImport.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const xlsx = require('xlsx');
 const fs = require('fs');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
 const { createQRAndSendEmail } = require('../utils/sendEmail');
 
 const upload = multer({ dest: 'uploads/' });
@@ -13,7 +14,7 @@ const db = new sqlite3.Database(dbPath);
 
 router.post('/', upload.single('file'), async (req, res) => {
   try {
-    const sendEmails = !!req.body.sendEmails;             // checkbox=on da true olur
+    const sendEmails = req.body.sendEmails === 'on';
     const emailTemplate = req.body.emailTemplate || '';
     const file = req.file;
     if (!file) return res.status(400).json({ message: 'No file uploaded.' });
@@ -78,11 +79,11 @@ router.post('/', upload.single('file'), async (req, res) => {
     }
 
     fs.unlinkSync(file.path);
-    return res.json({ imported, emailsSent });
+    res.json({ imported, emailsSent });
 
   } catch (err) {
     console.error('❌ Import error:', err);
-    return res.status(500).json({ message: 'Server error during import.' });
+    res.status(500).json({ message: 'Server error during import.' });
   }
 });
 
