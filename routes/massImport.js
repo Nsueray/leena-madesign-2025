@@ -1,11 +1,10 @@
-// routes/massImport.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const xlsx = require('xlsx');
 const fs = require('fs');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('sqlite3').verbose();            // ← burayı ekledik
 const { createQRAndSendEmail } = require('../utils/sendEmail');
 
 const upload = multer({ dest: 'uploads/' });
@@ -27,7 +26,9 @@ router.post('/', upload.single('file'), async (req, res) => {
     let emailsSent = 0;
 
     for (const row of rows) {
-      if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) continue;
+      if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) {
+        continue;
+      }
       imported++;
 
       const badgeID = 'MI' + Date.now() + Math.floor(Math.random() * 1000);
@@ -46,7 +47,7 @@ router.post('/', upload.single('file'), async (req, res) => {
         checkInTime: ''
       };
 
-      // 1) SQLite'a insert
+      // SQLite'a kaydet
       await new Promise((resolve, reject) => {
         db.run(
           `INSERT OR REPLACE INTO visitors (
@@ -67,11 +68,11 @@ router.post('/', upload.single('file'), async (req, res) => {
             visitor.timeStamp,
             visitor.checkInTime
           ],
-          err => err ? reject(err) : resolve()
+          err => (err ? reject(err) : resolve())
         );
       });
 
-      // 2) E-posta gönder (isteğe bağlı)
+      // E-posta gönder
       if (sendEmails) {
         await createQRAndSendEmail(visitor, badgeID, emailTemplate);
         emailsSent++;
@@ -79,11 +80,10 @@ router.post('/', upload.single('file'), async (req, res) => {
     }
 
     fs.unlinkSync(file.path);
-    res.json({ imported, emailsSent });
-
+    return res.json({ imported, emailsSent });
   } catch (err) {
     console.error('❌ Import error:', err);
-    res.status(500).json({ message: 'Server error during import.' });
+    return res.status(500).json({ message: 'Server error during import.' });
   }
 });
 
