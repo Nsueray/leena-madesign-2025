@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT || 3011;
 const webhookRoute = require('./routes/webhook');
 const downloadDb = require('./routes/downloadDb');
+const exhibitorRegister = require('./routes/exhibitorRegister');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,6 +20,7 @@ app.use('/register', require('./routes/register'));
 app.use('/download-db', downloadDb);
 app.use('/api/send-reminder', sendReminderRoute);
 app.use('/api/reminder-stats', reminderStatsRoute); // ✅ yeni eklendi
+app.use('/api/exhibitor-register', exhibitorRegister);
 
 const massImportRoute = require('./routes/massImport');
 app.use('/massimport', massImportRoute);
