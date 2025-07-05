@@ -21,6 +21,7 @@ router.post('/', upload.single('file'), async (req, res) => {
     const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
     let visitors = [];
+    let emailsSent = 0;
 
     for (let row of data) {
       if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) continue;
@@ -45,6 +46,7 @@ router.post('/', upload.single('file'), async (req, res) => {
 
       if (sendEmails) {
         await createQRAndSendEmail(visitor, badgeId, emailTemplate);
+        emailsSent++;
       }
 
       visitors.push(visitor);
@@ -52,7 +54,8 @@ router.post('/', upload.single('file'), async (req, res) => {
 
     await safeWriteVisitors(visitors);
     fs.unlinkSync(file.path);
-    res.json({ message: `✅ Successfully imported ${visitors.length} visitors.` });
+
+    res.json({ imported: visitors.length, emailsSent });
   } catch (err) {
     console.error('❌ Import error:', err);
     res.status(500).send('Server error during import.');
