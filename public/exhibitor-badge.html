@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Print Exhibitor Badge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background-color: #f7f9fb;
+      font-family: Arial, sans-serif;
+      color: #333;
+      text-align: center;
+      padding: 30px;
+    }
+    .logo {
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 100px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .italic {
+      font-style: italic;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://nsueray.github.io/leena-assets/assets/logo-elanexpo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h2>Print Exhibitor Badge</h2>
+
+  <label>First Name</label>
+  <input type="text" id="inputName" required />
+
+  <label>Last Name</label>
+  <input type="text" id="inputLastName" required />
+
+  <label>Company</label>
+  <input type="text" id="inputCompany" required />
+
+  <label>Exhibition</label>
+  <select id="inputExpo">
+    <option value="MadesignMorocco2025">Madesign</option>
+    <option value="MegaLightingMorocco2025">Lighting</option>
+    <option value="MegaCeramicaMorocco2025">Ceramica</option>
+  </select>
+
+  <button onclick="submitBadge()">Print Badge</button>
+
+  <script>
+    async function submitBadge() {
+      const name = document.getElementById("inputName").value.trim();
+      const lastName = document.getElementById("inputLastName").value.trim();
+      const company = document.getElementById("inputCompany").value.trim();
+      const expoName = document.getElementById("inputExpo").value;
+
+      if (!name || !lastName || !company || !expoName) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const res = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          lastName,
+          email: `${name}.${lastName}@exhibitor.com`,
+          company,
+          country: "Morocco",
+          jobTitle: "Exhibitor",
+          source: "Exhibitor Manual",
+          origin: "exhibitor",
+          expoName,
+          timeStamp: new Date().toISOString(),
+          checkInTime: new Date().toISOString()
+        })
+      });
+
+      const result = await res.json();
+      if (result.badgeID) {
+        window.location.href = `/badge.html?badge_id=${result.badgeID}`;
+      } else {
+        alert("Badge printing failed.");
+      }
+    }
+  </script>
+</body>
+</html>
+
