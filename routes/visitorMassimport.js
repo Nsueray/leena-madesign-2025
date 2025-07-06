@@ -78,7 +78,7 @@ router.post('/', upload.single('excelFile'), async (req, res) => {
     }
 
     fs.unlinkSync(filePath);
-    res.json({ message: 'Import successful', sentCount });
+    res.json({ imported: sentCount, emailsSent: sentCount });
   } catch (err) {
     console.error('❌ Mass import error:', err);
     res.status(500).json({ message: 'Server error' });
