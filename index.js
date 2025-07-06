@@ -22,10 +22,8 @@ app.use('/download-db', downloadDb);
 app.use('/api/send-reminder', sendReminderRoute);
 app.use('/api/reminder-stats', reminderStatsRoute); // ✅ yeni eklendi
 app.use('/api/exhibitor-register', exhibitorRegister);
-app.use('/api/visitor-massimport', visitorMassImport); // ✅ yeni eklendi
-
-const visitorMassImport = require('./routes/visitorMassimport');
-app.use('/massimport', visitorMassImport);
+// app.use('/api/visitor-massimport', visitorMassImport); // ❌ kaldırıldı
+app.use('/massimport', visitorMassImport); // ✅ artık frontend ile uyumlu
 
 app.get('/onsiteregistration005.html', (req, res) => {
   res.redirect(301, '/form-onsite.html');
