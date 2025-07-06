@@ -27,28 +27,52 @@ router.post('/', upload.single('file'), async (req, res) => {
       if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) continue;
 
       const badgeID = 'MI' + Date.now() + Math.floor(Math.random() * 1000);
+      const jobTitle = row['Job Title']?.trim() !== '' ? row['Job Title'] : 'N/A';
+
       const visitor = {
         badgeID,
         name: row['Visitor Name'],
         lastName: row['Visitor Last Name'],
         email: row.Email,
         company: row.Company,
-        jobTitle: row['Job Title']?.trim() !== '' ? row['Job Title'] : 'N/A',
         country: row['Country.'] || '',
+        jobTitle,
         phone: row.Mobile || '',
         sector: row.Sector || '',
         origin: 'massimport',
         source: row['Visitor Source'] || '',
         expoName: row['Expo Name'] || '',
         timeStamp: new Date().toISOString(),
-        checkInTime: ''
+        checkInTime: null
       };
 
-      await db.insertVisitor(visitor);
+      // Save to SQLite
+      const stmt = db.prepare(`INSERT INTO visitors (
+        badgeID, name, lastName, email, company, country, jobTitle, phone,
+        sector, origin, source, expoName, timeStamp, checkInTime
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+
+      stmt.run([
+        visitor.badgeID,
+        visitor.name,
+        visitor.lastName,
+        visitor.email,
+        visitor.company,
+        visitor.country,
+        visitor.jobTitle,
+        visitor.phone,
+        visitor.sector,
+        visitor.origin,
+        visitor.source,
+        visitor.expoName,
+        visitor.timeStamp,
+        visitor.checkInTime
+      ]);
+
       imported++;
 
       if (sendEmails) {
-        await createQRAndSendEmail(visitor, badgeID, emailTemplate);
+        await createQRAndSendEmail(visitor, visitor.badgeID, emailTemplate);
         emailsSent++;
       }
     }
@@ -57,7 +81,7 @@ router.post('/', upload.single('file'), async (req, res) => {
     res.json({ imported, emailsSent });
   } catch (err) {
     console.error('❌ Import error:', err);
-    res.status(500).json({ message: 'Server error during import.' });
+    res.status(500).send('Server error during import.');
   }
 });
 
