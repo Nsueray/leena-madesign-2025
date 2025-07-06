@@ -1,42 +1,38 @@
-// utils/sqlite-db.js
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Veritabanı dosyası yolu
+// Veritabanı dosya yolu
 const dbPath = path.join(__dirname, '../data/visitors.db');
 
-// DB açılırken tabloyu da oluştur
+// Veritabanını aç
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('❌ Cannot open SQLite database:', err);
-    process.exit(1);
+    console.error('❌ SQLite bağlantı hatası:', err);
+  } else {
+    console.log('✅ SQLite veritabanı açıldı:', dbPath);
   }
-  console.log('✅ SQLite database opened:', dbPath);
 });
 
-// Tablo yoksa oluştur
-db.run(`
-  CREATE TABLE IF NOT EXISTS visitors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    badgeID TEXT UNIQUE,
-    name TEXT,
-    lastName TEXT,
-    email TEXT,
-    company TEXT,
-    country TEXT,
-    jobTitle TEXT,
-    phone TEXT,
-    sector TEXT,
-    origin TEXT,
-    source TEXT,
-    expoName TEXT,
-    timeStamp TEXT,
-    checkInTime TEXT
-  )
-`, (err) => {
-  if (err) {
-    console.error('❌ Cannot create visitors table:', err);
-  }
+// Tabloyu oluştur (yoksa)
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS visitors (
+      badgeID TEXT PRIMARY KEY,
+      name TEXT,
+      lastName TEXT,
+      email TEXT,
+      company TEXT,
+      country TEXT,
+      jobTitle TEXT,
+      phone TEXT,
+      sector TEXT,
+      origin TEXT,
+      source TEXT,
+      expoName TEXT,
+      timeStamp TEXT,
+      checkInTime TEXT
+    )
+  `);
 });
 
 module.exports = db;
