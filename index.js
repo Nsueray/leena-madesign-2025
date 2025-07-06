@@ -24,8 +24,8 @@ app.use('/api/reminder-stats', reminderStatsRoute); // ✅ yeni eklendi
 app.use('/api/exhibitor-register', exhibitorRegister);
 app.use('/api/visitor-massimport', visitorMassImport); // ✅ yeni eklendi
 
-const massImportRoute = require('./routes/massImport');
-app.use('/massimport', massImportRoute);
+const visitorMassImport = require('./routes/visitorMassimport');
+app.use('/massimport', visitorMassImport);
 
 app.get('/onsiteregistration005.html', (req, res) => {
   res.redirect(301, '/form-onsite.html');
