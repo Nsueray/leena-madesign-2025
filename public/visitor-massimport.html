@@ -74,7 +74,7 @@
       }
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("excelFile", file); // DÜZELTİLDİ
       formData.append("skipExisting", skipExisting);
 
       const res = await fetch("/massimport", {
@@ -84,8 +84,9 @@
 
       const result = await res.json();
       document.getElementById("result").textContent =
-        res.ok ? `✅ Imported: ${result.imported}, Emails sent: ${result.emailsSent}`
-              : `❌ Error: ${result.message}`;
+        res.ok
+          ? `✅ Imported: ${result.imported}, Emails sent: ${result.emailsSent}`
+          : `❌ Error: ${result.message}`;
     }
   </script>
 </body>
