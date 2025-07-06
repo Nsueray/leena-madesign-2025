@@ -27,8 +27,7 @@ router.post('/', upload.single('file'), async (req, res) => {
       if (!row.Email || !row['Visitor Name'] || !row['Visitor Last Name'] || !row.Company) continue;
 
       const badgeID = 'MI' + Date.now() + Math.floor(Math.random() * 1000);
-      const jobTitle = row['Job Title']?.trim() !== '' ? row['Job Title'] : 'N/A';
-
+      const jobTitle = row['Job Title']?.trim() || 'N/A';
       const visitor = {
         badgeID,
         name: row['Visitor Name'],
@@ -46,12 +45,13 @@ router.post('/', upload.single('file'), async (req, res) => {
         checkInTime: null
       };
 
-      // Save to SQLite
-      const stmt = db.prepare(`INSERT INTO visitors (
-        badgeID, name, lastName, email, company, country, jobTitle, phone,
-        sector, origin, source, expoName, timeStamp, checkInTime
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-
+      // SQLite INSERT
+      const stmt = db.prepare(`
+        INSERT OR IGNORE INTO visitors (
+          badgeID, name, lastName, email, company, country, jobTitle, phone,
+          sector, origin, source, expoName, timeStamp, checkInTime
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
       stmt.run([
         visitor.badgeID,
         visitor.name,
@@ -68,6 +68,7 @@ router.post('/', upload.single('file'), async (req, res) => {
         visitor.timeStamp,
         visitor.checkInTime
       ]);
+      stmt.finalize();
 
       imported++;
 
