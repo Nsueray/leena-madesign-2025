@@ -6,6 +6,7 @@ const fs = require('fs');
 const QRCode = require('qrcode');
 const sendEmail = require('../utils/sendEmail');
 const sqlite3 = require('sqlite3').verbose();
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -66,6 +67,7 @@ router.post('/', upload.single('excelFile'), async (req, res) => {
         );
       });
 
+      await sleep(1800);
       await sendEmail({
         to: email,
         name,
