@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liste des Exposants</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    h2 {
+      text-align: center;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .logo {
+      text-align: center;
+    }
+    .logo img {
+      height: 80px;
+      margin-bottom: 20px;
+    }
+    #count {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://leena.app/assets/elanexpo-logo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h2>Liste des Exposants</h2>
+  <div id="count">Chargement...</div>
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>Badge ID</th>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Entreprise</th>
+        <th>Poste</th>
+        <th>Email</th>
+        <th>Téléphone</th>
+        <th>Pays</th>
+        <th>Salon</th>
+        <th>Horodatage</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadData() {
+      const res = await fetch('/api/exhibitors');
+      const data = await res.json();
+      const tbody = document.querySelector('#logTable tbody');
+      document.getElementById('count').textContent = `Total: ${data.length} exposants`;
+
+      data.reverse().forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.badgeID}</td>
+          <td>${row.lastName}</td>
+          <td>${row.name}</td>
+          <td>${row.company}</td>
+          <td>${row.jobTitle || ''}</td>
+          <td>${row.email || ''}</td>
+          <td>${row.phone || ''}</td>
+          <td>${row.country || ''}</td>
+          <td>${row.expoName || ''}</td>
+          <td>${row.timeStamp}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
