@@ -1,53 +1,49 @@
 const express = require('express');
-const router = express.Router();
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const QRCode = require('qrcode');
+const router = express.Router();
+const dbPath = path.join(__dirname, '../data/exhibitors.db');
 
-const dbPath = '/data/visitors.db';
-const db = new sqlite3.Database(dbPath);
+// Veritabanına bağlan
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) console.error('Failed to connect to exhibitors.db:', err);
+});
 
-// Ensure table exists
+// Gerekirse tabloyu oluştur
 db.run(`CREATE TABLE IF NOT EXISTS exhibitors (
-  badgeID TEXT PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  badgeID TEXT,
   name TEXT,
   lastName TEXT,
-  email TEXT,
   company TEXT,
+  jobTitle TEXT,
+  email TEXT,
+  phone TEXT,
+  country TEXT,
   expoName TEXT,
   timeStamp TEXT
 )`);
 
-router.post('/', async (req, res) => {
-  const { name, lastName, email, company, expoName } = req.body;
-
-  if (!name || !lastName || !email || !company || !expoName) {
-    return res.status(400).json({ message: 'Missing required fields' });
+// POST endpoint
+router.post('/', (req, res) => {
+  const { name, lastName, company, jobTitle, email, phone, country, expoName } = req.body;
+  if (!name || !lastName || !company || !expoName) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const badgeID = Date.now().toString();
-  const qrPath = path.join(__dirname, `../public/qrcodes/${badgeID}.png`);
-  await QRCode.toFile(qrPath, `https://${req.headers.host}/badge.html?badge_id=${badgeID}`);
+  const timeStamp = new Date().toISOString();
+  const badgeID = `exh${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
-  const stmt = db.prepare(`INSERT OR REPLACE INTO exhibitors 
-    (badgeID, name, lastName, email, company, expoName, timeStamp) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)`);
-
-  stmt.run(
-    badgeID,
-    name,
-    lastName,
-    email,
-    company,
-    expoName,
-    new Date().toISOString(),
+  db.run(
+    `INSERT INTO exhibitors (badgeID, name, lastName, company, jobTitle, email, phone, country, expoName, timeStamp)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [badgeID, name, lastName, company, jobTitle, email, phone, country, expoName, timeStamp],
     function (err) {
       if (err) {
-        console.error("❌ SQLite insert error:", err);
-        return res.status(500).json({ message: 'Database error' });
+        console.error('DB Insert Error:', err);
+        return res.status(500).json({ error: 'Database error' });
       }
-      console.log("✅ Exhibitor saved:", badgeID);
-      res.json({ message: 'Exhibitor registered', badgeID });
+      res.json({ badgeID });
     }
   );
 });

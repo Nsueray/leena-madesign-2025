@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Impression Badge Exposant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://leena.app/assets/elanexpo-logo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h2>Impression Badge Exposant</h2>
+
+  <form id="exhibitorForm">
+    <label>Salon / Exhibition
+      <select id="expoName" required>
+        <option value="">-- Choisissez --</option>
+        <option value="Mega Lighting Expo Morocco 2025">Mega Lighting Expo Morocco 2025</option>
+        <option value="Madesign Morocco 2025">Madesign Morocco 2025</option>
+        <option value="Mega Ceramica Expo Morocco 2025">Mega Ceramica Expo Morocco 2025</option>
+      </select>
+    </label>
+
+    <label>Prénom / First Name
+      <input type="text" id="firstName" required />
+    </label>
+
+    <label>Nom / Last Name
+      <input type="text" id="lastName" required />
+    </label>
+
+    <label>Entreprise / Company
+      <input type="text" id="company" required />
+    </label>
+
+    <label>Poste / Job Title
+      <input type="text" id="jobTitle" />
+    </label>
+
+    <label>Email
+      <input type="email" id="email" />
+    </label>
+
+    <label>Téléphone / Mobile Number
+      <input type="text" id="phone" />
+    </label>
+
+    <label>Pays / Country
+      <select id="country" required>
+        <option value="Morocco">Maroc</option>
+      </select>
+    </label>
+
+    <button type="submit">Imprimer le badge</button>
+  </form>
+
+  <script>
+    const countrySelect = document.getElementById("country");
+    const countries = ["Morocco", "France", "Allemagne", "Italie", "Espagne", "Royaume-Uni", "États-Unis", "Canada", "Turquie", "Chine", "Inde", "Émirats arabes unis", "Brésil", "Nigéria", "Kenya", "Ghana", "Afrique du Sud", "Belgique", "Pays-Bas", "Suède", "Suisse", "Norvège"];
+    countries
+      .filter(c => c !== "Morocco")
+      .sort()
+      .forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        countrySelect.appendChild(opt);
+      });
+
+    document.getElementById("exhibitorForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        expoName: document.getElementById("expoName").value.trim(),
+        name: document.getElementById("firstName").value.trim(),
+        lastName: document.getElementById("lastName").value.trim(),
+        company: document.getElementById("company").value.trim(),
+        jobTitle: document.getElementById("jobTitle").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        country: document.getElementById("country").value.trim()
+      };
+
+      const res = await fetch("/api/exhibitor-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (res.ok && result.badgeID) {
+        window.location.href = `/badge.html?badge_id=${result.badgeID}`;
+      } else {
+        alert("Erreur: le badge n'a pas pu être généré.");
+      }
+    });
+  </script>
+</body>
+</html>
