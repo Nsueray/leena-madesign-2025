@@ -10,6 +10,7 @@ const downloadDb = require('./routes/downloadDb');
 const exhibitorRegister = require('./routes/exhibitorRegister');
 const visitorMassImport = require('./routes/visitorMassimport'); // ✅ yeni eklendi
 const apiExhibitors = require('./routes/apiExhibitors');
+const apiCheckinsSqlite = require('./routes/apiCheckinsSqlite');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,6 +25,7 @@ app.use('/api/send-reminder', sendReminderRoute);
 app.use('/api/reminder-stats', reminderStatsRoute); // ✅ yeni eklendi
 app.use('/api/exhibitor-register', exhibitorRegister);
 app.use('/api/exhibitors', apiExhibitors);
+app.use('/api/checkins-sqlite', apiCheckinsSqlite);
 // app.use('/api/visitor-massimport', visitorMassImport); // ❌ kaldırıldı
 app.use('/massimport', visitorMassImport); // ✅ artık frontend ile uyumlu
 

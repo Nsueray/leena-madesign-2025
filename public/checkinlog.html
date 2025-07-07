@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Check-in Log</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .filters {
+      margin-bottom: 20px;
+    }
+    label {
+      margin-right: 15px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    #reportBtn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #reportBtn:hover {
+      background-color: #218838;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="/assets/elanexpo-logo.png" alt="Elan Expo Logo" />
+  </div>
+
+  <h2>Check-in Log</h2>
+
+  <div class="filters">
+    <label>
+      Fuar:
+      <select id="expoFilter">
+        <option value="">Tümü</option>
+        <option value="Mega Lighting Expo Morocco 2025">Mega Lighting Expo Morocco 2025</option>
+        <option value="Madesign Morocco 2025">Madesign Morocco 2025</option>
+        <option value="Mega Ceramica Expo Morocco 2025">Mega Ceramica Expo Morocco 2025</option>
+      </select>
+    </label>
+
+    <label>
+      Gün:
+      <select id="dateFilter">
+        <option value="">Tümü</option>
+        <option value="2025-07-08">8 Temmuz</option>
+        <option value="2025-07-09">9 Temmuz</option>
+        <option value="2025-07-10">10 Temmuz</option>
+      </select>
+    </label>
+
+    <label>
+      Source:
+      <select id="sourceFilter">
+        <option value="">Tümü</option>
+        <option value="Online">Online</option>
+        <option value="Onsite">Onsite</option>
+      </select>
+    </label>
+
+    <label>
+      Origin:
+      <select id="originFilter">
+        <option value="">Tümü</option>
+        <option value="zohoform">zohoform</option>
+        <option value="manual">manual</option>
+        <option value="scanner">scanner</option>
+        <option value="qr">qr</option>
+      </select>
+    </label>
+
+    <button id="reportBtn">🧾 Raporu e-posta ile gönder</button>
+  </div>
+
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>Zaman</th>
+        <th>Badge ID</th>
+        <th>Ad</th>
+        <th>Soyad</th>
+        <th>Şirket</th>
+        <th>Email</th>
+        <th>Ülke</th>
+        <th>Fuar</th>
+        <th>Source</th>
+        <th>Origin</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let allData = [];
+
+    async function fetchData() {
+      const res = await fetch('/api/checkins-sqlite');
+      const data = await res.json();
+      allData = data;
+      renderTable(data);
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector('#logTable tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.checkInTime}</td>
+          <td>${row.badgeID}</td>
+          <td>${row.name}</td>
+          <td>${row.lastName}</td>
+          <td>${row.company}</td>
+          <td>${row.email}</td>
+          <td>${row.country}</td>
+          <td>${row.expoName}</td>
+          <td>${row.source}</td>
+          <td>${row.origin}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function applyFilters() {
+      const expo = document.getElementById('expoFilter').value;
+      const date = document.getElementById('dateFilter').value;
+      const source = document.getElementById('sourceFilter').value;
+      const origin = document.getElementById('originFilter').value;
+
+      const filtered = allData.filter(row => {
+        return (!expo || row.expoName === expo) &&
+               (!date || row.checkInTime.startsWith(date)) &&
+               (!source || row.source === source) &&
+               (!origin || row.origin === origin);
+      });
+
+      renderTable(filtered);
+    }
+
+    document.getElementById('expoFilter').addEventListener('change', applyFilters);
+    document.getElementById('dateFilter').addEventListener('change', applyFilters);
+    document.getElementById('sourceFilter').addEventListener('change', applyFilters);
+    document.getElementById('originFilter').addEventListener('change', applyFilters);
+
+    document.getElementById('reportBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('reportBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Gönderiliyor...';
+      const res = await fetch('/api/send-checkin-report', { method: 'POST' });
+      const result = await res.json();
+      if (res.ok) {
+        btn.textContent = '✅ Rapor gönderildi!';
+      } else {
+        btn.textContent = '❌ Hata oluştu';
+      }
+      setTimeout(() => {
+        btn.textContent = '🧾 Raporu e-posta ile gönder';
+        btn.disabled = false;
+      }, 4000);
+    });
+
+    fetchData();
+  </script>
+</body>
+</html>
