@@ -95,9 +95,24 @@
 
     input.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
-        const badgeId = input.value.trim();
+        const scanned = input.value.trim();
+        let badgeId = scanned;
+
+        try {
+          const outer = new URL(scanned);
+          let id = outer.searchParams.get('badge_id');
+          if (id && id.startsWith('http')) {
+            const inner = new URL(id);
+            badgeId = inner.searchParams.get('badge_id') || id;
+          } else if (id) {
+            badgeId = id;
+          }
+        } catch (err) {
+          // raw badgeId bırak
+        }
+
         if (badgeId) {
-          window.location.href = `/badge.html?badge_id=${badgeId}`;
+          window.location.href = `/badge.html?badge_id=${encodeURIComponent(badgeId)}`;
         }
       }
     });
