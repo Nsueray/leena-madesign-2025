@@ -58,6 +58,23 @@
         document.getElementById('fullName').textContent = `${visitor.name || ''} ${visitor.lastName || ''}`;
         document.getElementById('company').textContent = visitor.company || '';
 
+        // ✅ Check-in kaydı
+        await fetch('/api/checkins', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            badgeID: visitor.badgeID,
+            name: visitor.name,
+            lastName: visitor.lastName,
+            company: visitor.company,
+            email: visitor.email,
+            country: visitor.country,
+            expoName: visitor.expoName,
+            source: visitor.source,
+            origin: visitor.origin
+          })
+        });
+
         setTimeout(() => window.print(), 300);
         window.onafterprint = () => window.location.href = '/qrscanner.html';
       } catch (err) {
