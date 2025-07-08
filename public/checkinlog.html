@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Check-in Log</title>
@@ -54,7 +54,11 @@
       margin-bottom: 20px;
     }
     .logo img {
-      height: 80px;
+      height: 160px;
+    }
+    .counters {
+      margin-bottom: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -67,9 +71,9 @@
 
   <div class="filters">
     <label>
-      Fuar:
+      Exhibition:
       <select id="expoFilter">
-        <option value="">Tümü</option>
+        <option value="">All</option>
         <option value="Mega Lighting Expo Morocco 2025">Mega Lighting Expo Morocco 2025</option>
         <option value="Madesign Morocco 2025">Madesign Morocco 2025</option>
         <option value="Mega Ceramica Expo Morocco 2025">Mega Ceramica Expo Morocco 2025</option>
@@ -77,19 +81,19 @@
     </label>
 
     <label>
-      Gün:
+      Date:
       <select id="dateFilter">
-        <option value="">Tümü</option>
-        <option value="2025-07-08">8 Temmuz</option>
-        <option value="2025-07-09">9 Temmuz</option>
-        <option value="2025-07-10">10 Temmuz</option>
+        <option value="">All</option>
+        <option value="2025-07-08">July 8</option>
+        <option value="2025-07-09">July 9</option>
+        <option value="2025-07-10">July 10</option>
       </select>
     </label>
 
     <label>
       Source:
       <select id="sourceFilter">
-        <option value="">Tümü</option>
+        <option value="">All</option>
         <option value="Online">Online</option>
         <option value="Onsite">Onsite</option>
       </select>
@@ -98,7 +102,7 @@
     <label>
       Origin:
       <select id="originFilter">
-        <option value="">Tümü</option>
+        <option value="">All</option>
         <option value="zohoform">zohoform</option>
         <option value="manual">manual</option>
         <option value="scanner">scanner</option>
@@ -106,20 +110,24 @@
       </select>
     </label>
 
-    <button id="reportBtn">🧾 Raporu e-posta ile gönder</button>
+    <button id="reportBtn">📤 Send Report via Email</button>
+  </div>
+
+  <div class="counters">
+    Total Check-ins: <span id="totalCount">0</span> | Filtered: <span id="filteredCount">0</span>
   </div>
 
   <table id="logTable">
     <thead>
       <tr>
-        <th>Zaman</th>
+        <th>Time</th>
         <th>Badge ID</th>
-        <th>Ad</th>
-        <th>Soyad</th>
-        <th>Şirket</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Company</th>
         <th>Email</th>
-        <th>Ülke</th>
-        <th>Fuar</th>
+        <th>Country</th>
+        <th>Exhibition</th>
         <th>Source</th>
         <th>Origin</th>
       </tr>
@@ -127,21 +135,50 @@
     <tbody></tbody>
   </table>
 
+  <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
+
   <script>
     let allData = [];
+    let currentPage = 1;
+    const perPage = 200;
 
     async function fetchData() {
-      const res = await fetch('/api/checkins-sqlite');
+      const res = await fetch('/api/checkins');
       const data = await res.json();
       allData = data;
-      renderTable(data);
+      document.getElementById('totalCount').textContent = allData.length;
+      applyFilters();
+    }
+
+    function paginate(data) {
+      const start = (currentPage - 1) * perPage;
+      return data.slice(start, start + perPage);
+    }
+
+    function renderPagination(filtered) {
+      const pageCount = Math.ceil(filtered.length / perPage);
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+      for (let i = 1; i <= pageCount; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.style.margin = '2px';
+        btn.disabled = i === currentPage;
+        btn.onclick = () => {
+          currentPage = i;
+          renderTable(filtered);
+        };
+        container.appendChild(btn);
+      }
     }
 
     function renderTable(data) {
       const tbody = document.querySelector('#logTable tbody');
       tbody.innerHTML = '';
+      const pageData = paginate(data);
+      document.getElementById('filteredCount').textContent = data.length;
 
-      data.forEach(row => {
+      pageData.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row.checkInTime}</td>
@@ -157,6 +194,8 @@
         `;
         tbody.appendChild(tr);
       });
+
+      renderPagination(data);
     }
 
     function applyFilters() {
@@ -172,6 +211,7 @@
                (!origin || row.origin === origin);
       });
 
+      currentPage = 1;
       renderTable(filtered);
     }
 
@@ -183,16 +223,16 @@
     document.getElementById('reportBtn').addEventListener('click', async () => {
       const btn = document.getElementById('reportBtn');
       btn.disabled = true;
-      btn.textContent = '⏳ Gönderiliyor...';
+      btn.textContent = '⏳ Sending...';
       const res = await fetch('/api/send-checkin-report', { method: 'POST' });
       const result = await res.json();
       if (res.ok) {
-        btn.textContent = '✅ Rapor gönderildi!';
+        btn.textContent = '✅ Report sent!';
       } else {
-        btn.textContent = '❌ Hata oluştu';
+        btn.textContent = '❌ Error sending report';
       }
       setTimeout(() => {
-        btn.textContent = '🧾 Raporu e-posta ile gönder';
+        btn.textContent = '📤 Send Report via Email';
         btn.disabled = false;
       }, 4000);
     });
@@ -201,3 +241,4 @@
   </script>
 </body>
 </html>
+
