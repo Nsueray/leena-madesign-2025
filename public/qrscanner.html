@@ -150,6 +150,24 @@
 
       const result = await res.json();
       if (result.badgeID) {
+        // ✅ Check-in işlemi eklendi
+        await fetch("/api/checkins", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            badgeID: result.badgeID,
+            name,
+            lastName,
+            company,
+            email,
+            country: "Maroc",
+            jobTitle,
+            expoName,
+            source: "Manual Registration",
+            origin: "onsite"
+          })
+        });
+
         window.location.href = `/badge.html?badge_id=${result.badgeID}`;
       } else {
         alert("Erreur lors de l'enregistrement.");
