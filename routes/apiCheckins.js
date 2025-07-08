@@ -67,4 +67,15 @@ router.post('/', (req, res) => {
   );
 });
 
+// ✅ GET /api/checkins → checkins.db'den verileri okur
+router.get('/', (req, res) => {
+  db.all('SELECT * FROM checkins ORDER BY checkInTime DESC', [], (err, rows) => {
+    if (err) {
+      console.error('❌ SQLite read error:', err);
+      return res.status(500).json({ error: 'Database read error' });
+    }
+    res.json(rows);
+  });
+});
+
 module.exports = router;
